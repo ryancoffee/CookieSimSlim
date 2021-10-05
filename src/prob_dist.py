@@ -81,7 +81,7 @@ class Params:
 
 def runprocess(params):
     m = re.search('(^.*)\.h5',params.ofname)
-    print(params.ofname)
+    #print(params.ofname)
     if not m:
         print('failed filename match')
         return
@@ -100,6 +100,7 @@ def runprocess(params):
             drawscale = params.drawscale #10
             X,Y = build_XY(nenergies = nenergies, nangles = nangles, drawscale = drawscale)
             grp.create_dataset('Ypdf',data=Y,dtype=np.float32)
+
             hitsvec = []
             nedges = [0]
             addresses = []
@@ -117,17 +118,46 @@ def runprocess(params):
             grp.attrs.create('nangles',nangles)
             grp.attrs.create('nenergies',nenergies)
             grp.attrs.create('drawscale',drawscale)
+
+            img = np.zeros((grp.attrs['nangles'],grp.attrs['nenergies']),dtype=np.uint16)
+
+            for a in range(grp.attrs['nangles']):
+                offset = grp['Xaddresses'][()][a]
+                nhits = grp['Xnedges'][()][a]
+                img[a,:] += np.histogram(grp['Xhits'][()][offset:offset+nhits],hbins)[0].astype(np.uint16)
+            grp.create_dataset('Ximg',data=img,dtype=np.int16)
+
+            grp.attrs.create('Test',False)
+            grp.attrs.create('Train',False)
+            if rng.uniform()<split:
+                grp.attrs['Test'] = True
+            else:
+                grp.attrs['Train'] = True
+
+        '''
+        output file struct
+        main--image --Xhits,Xaddresses,Xnedges
+                    --Ypdf
+                    --Ximg
+                    --attrs --nangles (the number of angles measured)
+                            --nenergies (the number of energy bins)
+                            --drawscale (the x-ray intensity scale factor for draws from the CDF-cumulative distribution function)
+                            --test/train
+            --image
+            --image
+        '''
+
     return
 
 
 def main():
-    if len(sys.argv)<4:
-        print('syntax: %s <outfilename.h5> <nimages> <nthreads>'%sys.argv[0])
+    if len(sys.argv)<5:
+        print('syntax: %s <outfilename.h5> <nimages> <nchannels> <nthreads>'%sys.argv[0])
         return
 
-    paramslist = [Params('%s'%(sys.argv[1]),int(sys.argv[2]) ) for i in range(int(sys.argv[3]))]
+    paramslist = [Params('%s'%(sys.argv[1]),int(sys.argv[2])) for i in range(int(sys.argv[4]))]
     for p in paramslist:
-        p.setnangles(128).setdrawscale(5)
+        p.setnangles(int(sys.argv[3])).setdrawscale(2)
 
     with mp.Pool(processes=len(paramslist)) as pool:
         pool.map(runprocess,paramslist)

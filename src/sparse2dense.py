@@ -6,6 +6,7 @@ import sys
 import re
 import numpy as np
 import multiprocessing as mp
+from utils import build_XY
 
 def sparse2dense(h5name,split=0.1):
     rng = np.random.default_rng()
@@ -52,11 +53,13 @@ class Params:
 
 def runprocess(params):
     X_train,Y_train,X_test,Y_test = sparse2dense(params.infname,split=params.testsplit)
-    with h5py.File(params.ofname,'a') as f:
+    with h5py.File(params.trainname,'a') as f:
         f.create_dataset('Y_train',data=Y_train,dtype=np.float32)
         f.create_dataset('X_train',data=X_train,dtype=np.float32)
+    with h5py.File(params.testname,'a') as f:
         f.create_dataset('Y_test',data=Y_test,dtype=np.float32)
         f.create_dataset('X_test',data=X_test,dtype=np.float32)
+
 
 def main():
     if len(sys.argv)<3:
