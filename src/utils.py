@@ -12,10 +12,10 @@ def gauss(x,w,c):
 
 
 def build_XY(nenergies=128,nangles=64,drawscale = 10):
+    rng = np.random.default_rng()
     x = np.arange(nenergies,dtype=float)
     w = 5.
     amp = 30.
-    rng = np.random.default_rng()
     ncenters = rng.poisson(3)
     phases = rng.normal(np.pi,2,ncenters)
     centers = rng.random(ncenters)*x.shape[0]

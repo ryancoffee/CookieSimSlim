@@ -8,41 +8,7 @@ import sys
 import re
 import multiprocessing as mp
 import os
-
-def cossq(x,w,c):
-    inds = np.where(np.abs(x.astype(float)-c)<w)
-    y = np.zeros(x.shape)
-    y[inds] = 0.5*(1+np.cos(np.pi*(x[inds].astype(float)-c)/w))
-    return y
-
-def gauss(x,w,c):
-    return np.exp(-((x.astype(float)-c)/w)**2)
-
-def build_XY(nenergies=128,nangles=64,drawscale = 10):
-    x = np.arange(nenergies,dtype=float)
-    w = 5.
-    amp = 30.
-    rng = np.random.default_rng()
-    ncenters = rng.poisson(3)
-    phases = rng.normal(np.pi,2,ncenters)
-    centers = rng.random(ncenters)*x.shape[0]
-    ymat = np.zeros((x.shape[0],nangles),dtype=float)
-    for i in range(len(centers)):
-        for a in range(nangles):
-            kick = amp*np.cos(a*2.*np.pi/nangles + phases[i])
-            ymat[:,a] += cossq(x,w,centers[i]+kick) # this produces the 2D PDF
-    cmat = np.cumsum(ymat,axis=0)
-    # the number of draws for each angle should be proportional to the total sum of that angle
-    hits = []
-    for a in range(nangles):
-        cum = cmat[-1,a]
-        draws = int(drawscale*cum)
-        drawpoints = np.sort(rng.random(draws))
-        if cum>0:
-            hits.append(list(np.interp(drawpoints,cmat[:,a]/cum,x)))
-        else:
-            hits.append([])
-    return hits,ymat
+from utils import cossq,gauss,build_XY
 
 class Params:
     def __init__(self,name,n):
@@ -51,6 +17,7 @@ class Params:
         self.nenergies = 128
         self.nangles = 64
         self.drawscale = 10
+        self.testsplit = 0.1
 
     def setnenergies(self,n):
         self.nenergies = int(n)
@@ -67,6 +34,9 @@ class Params:
     def setnimages(self,n):
         self.nimages = n
         return self
+    def settestsplit(self,r): # this is the ratio of test images to total images generated
+        self.testsplit = r
+        return self
 
     def getnenergies(self):
         return self.nenergies
@@ -78,8 +48,11 @@ class Params:
         return self.ofname
     def getnimages(self):
         return self.nimages
+    def gettestsplit(self): 
+        return self.testsplit
 
 def runprocess(params):
+    rng = np.random.default_rng()
     m = re.search('(^.*)\.h5',params.ofname)
     #print(params.ofname)
     if not m:
@@ -89,6 +62,7 @@ def runprocess(params):
     nimages = params.nimages
     tstring = '%s%.9f'%(ofname,time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha256(bytearray(map(ord,tstring)))
+    testsplit = params.testsplit
     with h5py.File(ofname,'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord,'shot_%i_'%i))
@@ -96,6 +70,7 @@ def runprocess(params):
             key = keyhash.hexdigest()
             grp = f.create_group(key)
             nenergies = params.nenergies #128
+            hbins = np.arange(nenergies+1,dtype=np.float16) # have to add 1 since histogram bin edges.
             nangles = params.nangles #64
             drawscale = params.drawscale #10
             X,Y = build_XY(nenergies = nenergies, nangles = nangles, drawscale = drawscale)
@@ -129,7 +104,7 @@ def runprocess(params):
 
             grp.attrs.create('Test',False)
             grp.attrs.create('Train',False)
-            if rng.uniform()<split:
+            if rng.uniform()<testsplit:
                 grp.attrs['Test'] = True
             else:
                 grp.attrs['Train'] = True
@@ -157,7 +132,7 @@ def main():
 
     paramslist = [Params('%s'%(sys.argv[1]),int(sys.argv[2])) for i in range(int(sys.argv[4]))]
     for p in paramslist:
-        p.setnangles(int(sys.argv[3])).setdrawscale(2)
+        p.setnangles(int(sys.argv[3])).setdrawscale(2).settestsplit(.1)
 
     with mp.Pool(processes=len(paramslist)) as pool:
         pool.map(runprocess,paramslist)
