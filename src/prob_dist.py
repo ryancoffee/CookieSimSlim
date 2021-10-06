@@ -8,7 +8,7 @@ import sys
 import re
 import multiprocessing as mp
 import os
-from utils import cossq,gauss,build_XY
+import utils
 
 class Params:
     def __init__(self,name,n):
@@ -73,7 +73,7 @@ def runprocess(params):
             hbins = np.arange(nenergies+1,dtype=np.float16) # have to add 1 since histogram bin edges.
             nangles = params.nangles #64
             drawscale = params.drawscale #10
-            X,Y = build_XY(nenergies = nenergies, nangles = nangles, drawscale = drawscale)
+            X,Y = utils.build_XY(nenergies = nenergies, nangles = nangles, drawscale = drawscale)
             grp.create_dataset('Ypdf',data=Y,dtype=np.float32)
 
             hitsvec = []
