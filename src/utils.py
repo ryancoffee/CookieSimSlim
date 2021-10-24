@@ -1,5 +1,6 @@
-import numpy as np
+#!/usr/bin/python3
 
+import numpy as np
 
 def cossq(x,w,c):
     inds = np.where(np.abs(x.astype(float)-c)<w)
@@ -9,7 +10,6 @@ def cossq(x,w,c):
 
 def gauss(x,w,c):
     return np.exp(-((x.astype(float)-c)/w)**2)
-
 
 def build_XY(nenergies=128,nangles=64,drawscale = 10):
     rng = np.random.default_rng()
