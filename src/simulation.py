@@ -8,12 +8,13 @@ import os
 import utils
 
 class Params:
-    def __init__(self,name,n):
+    def __init__(self,path,name,n):
+	self.ofpath = path
         self.ofname = name
         self.nimages = n 
         self.nenergies = 128
-        self.nangles = 64
-        self.drawscale = 10
+        self.nangles =128 
+        self.drawscale = 2
         self.testsplit = 0.1
 
     def setnenergies(self,n):
@@ -88,12 +89,7 @@ def runprocess(params):
 
 def runprocess(params):
     rng = np.random.default_rng()
-    m = re.search('(^.*)\.h5',params.ofname)
-    #print(params.ofname)
-    if not m:
-        print('failed filename match')
-        return
-    ofname = '%s.pid%i.h5'%(m.group(1),os.getpid())
+    ofname = '%s.pid%i.h5'%(params.ofname,os.getpid())
     nimages = params.nimages
     tstring = '%s%.9f'%(ofname,time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha256(bytearray(map(ord,tstring)))
