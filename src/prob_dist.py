@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 
 import h5py
-from simulation import Params
+from simulation import Params, runprocess
 import sys
 import multiprocessing as mp
 import argparse
 import os
 import utils
+import re
 
 parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond Angular Streaking')
 parser.add_argument('-n_threads',   type=int, default=2, help='Number of Threads')
@@ -21,7 +22,7 @@ def main():
     if len(unparsed) > 0:
         print('Unrecognized argument(s): \n%s \nProgram exiting ... ... ' % '\n'.join(unparsed))
         exit(0)
-    m = re.search('(^.*)/(w+)\.h5',args.ofname)
+    m = re.search('(^.*)\/(\w+)\.h5',args.ofname)
     if not m:
         print('failed filename match for ofname = %s'%args.ofname)
         return
