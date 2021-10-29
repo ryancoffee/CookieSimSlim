@@ -6,8 +6,8 @@ Slim simulator for LCLS-SLAC CookieBox detector
 ## The Probability Distribution Function (PDF)  
 
 ```bash  
-./src/prob_dist.py <outfilename.h5> <nimages> <nchannels> <nthreads>  
-./src/prob_dist.py <point_this_somewhere.h5> <nimages=25000> <nchannels=128> <nthreads=10>  
+./src/prob_dist.py -ofname <outfilename.h5> <optional> -n_images <nimages> -n_angles <nchannels> -n_threads <nthreads>    
+./src/prob_dist.py -ofname /home/user/herigo/withmydata/somewhere.h5 -n_images 25000 -n_angles 128 -n_threads 10    
 ```  
 
 An example of running this for a simple test on two threads with 128 angle channels and 10 images each thread is as follows,
@@ -16,19 +16,19 @@ which in principle should be run as a script:
 opath=~/data/h5files  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/prob_dist.py ${outfile} 10 128 2  
+./src/prob_dist.py -ofname ${outfile} -n_images 10 -n_angles 128 -n_threads 2  
 ```  
 
 
 .h5 file structure: (assuming 64 angles and 128 energy bins)  
-* image	  
+* image	-- still setting the key as a hash... avoiding collision since could be adding images to existing file.
 	* Xhits (N,)  
-	* Xaddresses (64,)  
-	* Xnedges (64,)  
-	* Ximg (64,128)  
-	* Ypdf (64,128)  
+	* Xaddresses (128,)  
+	* Xnedges (128,)  
+	* Ximg (128,128)  
+	* Ypdf (128,128)  
 	* attrs  
-		* nangles = 64   
+		* nangles = 128   
 		* nenergies = 128  
 		* drawscale = ~4 ??  
 		* Test = True/False  
@@ -36,5 +36,10 @@ outfile=${opath}/test.h5
 * image  
 * image  
 
+## Viewing the first image in a given resulting .h5 file
+
+```bash
+gnuplot ./figs/plotting.sample_Ximg.gnuplot
+```
 
 

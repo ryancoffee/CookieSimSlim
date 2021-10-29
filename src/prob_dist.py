@@ -10,12 +10,12 @@ import utils
 import re
 
 parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond Angular Streaking')
+parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
 parser.add_argument('-n_threads',   type=int, default=2, help='Number of Threads')
 parser.add_argument('-n_angles',type=int, default=128, help='Number of angles')
 parser.add_argument('-n_images', type=int,default=10, help='Number of images per thread')
 parser.add_argument('-drawscale', type=int,default=2,required=False, help='Scaling for draws from the distribution, e.g. scale the number of electrons')
 parser.add_argument('-testsplit', type=float,default=0.1,required=False, help='test images as percent of total')
-parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
 
 def main():
     args, unparsed = parser.parse_known_args()

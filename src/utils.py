@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import numpy as np
+import h5py
 
 def cossq(x,w,c):
     inds = np.where(np.abs(x.astype(float)-c)<w)
@@ -36,3 +37,11 @@ def build_XY(nenergies=128,nangles=64,drawscale = 10):
         else:
             hits.append([])
     return hits,ymat
+
+def Ximg2ascii(fname):
+    f = h5py.File(fname,'r')
+    for i,k in enumerate(list(f.keys())[:4]):
+        np.savetxt('%s.Ximg.%i'%(fname,i),f[k]['Ximg'][()],fmt='%i')
+        np.savetxt('%s.Ypdf.%i'%(fname,i),f[k]['Ypdf'][()],fmt='%i')
+    f.close()
+    return

@@ -59,69 +59,19 @@ class Params:
 
 
 def runprocess(params):
-    m = re.search('(^.*)\.h5', params.ofname)
-    print(params.ofname)
-    if not m:
-        print('failed filename match')
-        return
-    ofname = '%s.pid%i.h5' % (m.group(1), os.getpid())
-    nimages = params.nimages
-    tstring = '%s%.9f' % (ofname, time.clock_gettime(time.CLOCK_REALTIME))
-    keyhash = hashlib.sha256(bytearray(map(ord, tstring)))
-    with h5py.File(ofname, 'a') as f:
-        for i in range(nimages):
-            bs = bytearray(map(ord, 'shot_%i_' % i))
-            keyhash.update(bs)
-            key = keyhash.hexdigest()
-            grp = f.create_group(key)
-            nenergies = params.nenergies  # 128
-            nangles = params.nangles  # 64
-            drawscale = params.drawscale  # 10
-            X, Y = build_XY(nenergies=nenergies,
-                            nangles=nangles, drawscale=drawscale)
-            grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
-            hitsvec = []
-            nedges = [0]
-            addresses = []
-            for h in X:
-                if len(h) == 0:
-                    nedges += [0]
-                    addresses += [0]
-                else:
-                    nedges += [len(h)]
-                    addresses += [len(hitsvec)]
-                    hitsvec += h
-            grp.create_dataset('Xhits', data=hitsvec, dtype=np.float32)
-            grp.create_dataset('Xaddresses', data=addresses, dtype=int)
-            grp.create_dataset('Xnedges', data=nedges, dtype=int)
-            grp.attrs.create('nangles', nangles)
-            grp.attrs.create('nenergies', nenergies)
-            grp.attrs.create('drawscale', drawscale)
-    return
-
-
-def runprocess(params):
     rng = np.random.default_rng()
-    ofname = '%s.pid%i.h5' % (params.ofname, os.getpid())
     nimages = params.nimages
-    tstring = '%s%.9f' % (ofname, time.clock_gettime(time.CLOCK_REALTIME))
+    tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha256(bytearray(map(ord, tstring)))
-    testsplit = params.testsplit
-    with h5py.File(ofname, 'a') as f:
+    with h5py.File('%s/%s.%s.h5'%(params.ofpath,params.ofname,os.getpid()), 'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord, 'shot_%i_' % i))
             keyhash.update(bs)
             key = keyhash.hexdigest()
             grp = f.create_group(key)
-            nenergies = params.nenergies  # 128
-            # have to add 1 since histogram bin edges.
-            hbins = np.arange(nenergies+1, dtype=np.float16)
-            nangles = params.nangles  # 64
-            drawscale = params.drawscale  # 10
-            X, Y = utils.build_XY(nenergies=nenergies,
-                                  nangles=nangles, drawscale=drawscale)
+            X, Y = utils.build_XY(nenergies=params.nenergies,
+                            nangles=params.nangles, drawscale=params.drawscale)
             grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
-
             hitsvec = []
             nedges = [0]
             addresses = []
@@ -134,25 +84,23 @@ def runprocess(params):
                     addresses += [len(hitsvec)]
                     hitsvec += h
             grp.create_dataset('Xhits', data=hitsvec, dtype=np.float32)
-            grp.create_dataset('Xaddresses', data=addresses, dtype=int)
-            grp.create_dataset('Xnedges', data=nedges, dtype=int)
-            grp.attrs.create('nangles', nangles)
-            grp.attrs.create('nenergies', nenergies)
-            grp.attrs.create('drawscale', drawscale)
+            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint16)
+            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint16)
+            grp.attrs.create('nangles', params.nangles,dtype=np.uint16)
+            grp.attrs.create('nenergies', params.nenergies,dtype=np.uint16)
+            grp.attrs.create('drawscale', params.drawscale,dtype=np.uint16)
 
-            img = np.zeros(
-                (grp.attrs['nangles'], grp.attrs['nenergies']), dtype=np.uint16)
+            img = np.zeros((params.nangles,params.nenergies), dtype=np.uint8)
 
             for a in range(grp.attrs['nangles']):
                 offset = grp['Xaddresses'][()][a]
                 nhits = grp['Xnedges'][()][a]
-                img[a, :] += np.histogram(grp['Xhits'][()]
-                                          [offset:offset+nhits], hbins)[0].astype(np.uint16)
-            grp.create_dataset('Ximg', data=img, dtype=np.int16)
+                img[a, :] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint8)
+            grp.create_dataset('Ximg', data=img, dtype=np.uint8)
 
             grp.attrs.create('Test', False)
             grp.attrs.create('Train', False)
-            if rng.uniform() < testsplit:
+            if rng.uniform() < params.testsplit:
                 grp.attrs['Test'] = True
             else:
                 grp.attrs['Train'] = True
