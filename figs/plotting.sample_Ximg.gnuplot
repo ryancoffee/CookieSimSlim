@@ -165,7 +165,17 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "qt"
 ## Last datafile plotted: "test.Ximg"
+unset xtics
+unset ytics
+unset xlabel
+unset ylabel
+set xrange [0:128]
+set yrange [0:128]
 set term png size 800,800
-set output './figs/test.Ximg.png'
+set output './figs/test.Ximg.Ypdf.png'
+set multiplot
+set origin 0,.5
+set size .5,.5
 splot 'test.Ximg' mat
+unset multiplot
 #    EOF

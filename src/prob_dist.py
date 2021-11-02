@@ -4,10 +4,10 @@ import h5py
 from simulation import Params, runprocess
 import sys
 import multiprocessing as mp
-import argparse
 import os
-import utils
 import re
+
+import argparse
 
 parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond Angular Streaking')
 parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
@@ -27,6 +27,7 @@ def main():
         print('failed filename match for ofname = %s'%args.ofname)
         return
     print('%s\t%s'%(m.group(1),m.group(2)))
+
     if not os.path.exists(m.group(1)):
         os.makedirs(m.group(1))
     paramslist = [Params(m.group(1),m.group(2),args.n_images) for i in range(args.n_threads)]
