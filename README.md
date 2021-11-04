@@ -36,10 +36,11 @@ outfile=${opath}/test.h5
 * image  
 * image  
 
-## Viewing the first image in a given resulting .h5 file
+## Viewing the first few images in a given resulting .h5 file
 
 ```bash
-gnuplot ./figs/plotting.sample_Ximg.gnuplot
+./src/images2ascii.py -ifname ~/data/h5files/latest/test.3570.h5 -ofpath ~/data/ascii -n_images 3
+gnuplot -c ./figs/plotting.sample_Ximg.gnuplot ~/data/ascii/test.3570.Ximg00[01].ascii ~/data/ascii/test.3570.Ypdf00[01].ascii
 ```
 
 

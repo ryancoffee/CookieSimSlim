@@ -171,11 +171,33 @@ unset xlabel
 unset ylabel
 set xrange [0:128]
 set yrange [0:128]
-set term png size 800,800
-set output './figs/test.Ximg.Ypdf.png'
+xname = ARG1
+yname = ARG2
+imnum = ARG3
+#xlist = sprintf('%s %s',ARG1,ARG2)
+#ylist = sprintf('%s %s',ARG3,ARG4)
+#print(word(ylist,1))
+#nimgs = ARGC/2
+#print(nimgs)
+nimgs=1
+w = 800
+h = 400*nimgs
+print(w)
+print(h)
+set term png size w,h
+set output sprintf('./figs/test.Ximg.Ypdf.img%03i.png',int(imnum))
 set multiplot
-set origin 0,.5
-set size .5,.5
-splot 'test.Ximg' mat
+#set size .5,0.1*10./nimgs
+set size .5,1
+#do for [i=0:nimgs]{
+#	set origin 0,(0.1*i*(10./nimgs))
+#	splot word(xlist,i+1) mat
+#	set origin .5,(0.1*i*(10./nimgs))
+#	splot word(ylist,i+1) mat
+#}
+set origin 0,0
+splot xname mat
+set origin .5,0
+splot yname mat
 unset multiplot
 #    EOF

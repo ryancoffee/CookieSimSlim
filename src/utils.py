@@ -20,27 +20,29 @@ def build_XY(nenergies=128,nangles=64,drawscale = 10):
     ncenters = rng.poisson(3)
     phases = rng.normal(np.pi,2,ncenters)
     centers = rng.random(ncenters)*x.shape[0]
-    ymat = np.zeros((x.shape[0],nangles),dtype=float)
+    ymat = np.zeros((nangles,x.shape[0]),dtype=float)
     for i in range(len(centers)):
         for a in range(nangles):
             kick = amp*np.cos(a*2.*np.pi/nangles + phases[i])
-            ymat[:,a] += cossq(x,w,centers[i]+kick) # this produces the 2D PDF
-    cmat = np.cumsum(ymat,axis=0)
+            ymat[a,:] += cossq(x,w,centers[i]+kick) # this produces the 2D PDF
+    cmat = np.cumsum(ymat,axis=1)
     # the number of draws for each angle should be proportional to the total sum of that angle
     hits = []
     for a in range(nangles):
-        cum = cmat[-1,a]
+        cum = cmat[a,-1]
         draws = int(drawscale*cum)
         drawpoints = np.sort(rng.random(draws))
         if cum>0:
-            hits.append(list(np.interp(drawpoints,cmat[:,a]/cum,x)))
+            hits.append(list(np.interp(drawpoints,cmat[a,:]/cum,x)))
         else:
             hits.append([])
     return hits,ymat
 
-def imges2ascii(fname,nimages):
+def images2ascii(fname,nimages):
+    Ximgs = []
+    Yimgs = []
     with h5py.File(fname,'r') as f:
         for i,k in enumerate(list(f.keys())[:nimages]):
-            np.savetxt('%s.Ximg.%i'%(fname,i),f[k]['Ximg'][()],fmt='%i')
-            np.savetxt('%s.Ypdf.%i'%(fname,i),f[k]['Ypdf'][()],fmt='%i')
-    return
+            Ximgs += [ f[k]['Ximg'][()] ]
+            Yimgs += [ f[k]['Ypdf'][()] ]
+    return Ximgs,Yimgs
