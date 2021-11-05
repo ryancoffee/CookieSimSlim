@@ -15,7 +15,9 @@ class Params:
         self.nimages = n
         self.nenergies = 128
         self.nangles = 128
-        self.drawscale = 2
+        self.drawscale = 8
+        self.darkscale = 0.001
+        self.secondaryscale = 0.01
         self.testsplit = 0.1
 
     def setnenergies(self, n):
@@ -41,6 +43,20 @@ class Params:
     def settestsplit(self, r):  # this is the ratio of test images to total images generated
         self.testsplit = r
         return self
+
+    def setdarkscale(self, r):  # this is the level of dark counts (this doesn't scale with intensity)
+        self.darkscale = r
+        return self
+
+    def setsecondaryscale(self, r):  # this is the level of secondary electron counts (this does scale with intensity) that scale with x-ray intensity
+        self.secondaryscale = r
+        return self
+
+    def getsecondaryscale(self):
+        return self.secondaryscale
+
+    def getdarkscale(self):
+        return self.darkscale
 
     def getnenergies(self):
         return self.nenergies
@@ -70,7 +86,8 @@ def runprocess(params):
             key = keyhash.hexdigest()
             grp = f.create_group(key)
             X, Y = utils.build_XY(nenergies=params.nenergies,
-                            nangles=params.nangles, drawscale=params.drawscale)
+                            nangles=params.nangles, drawscale=params.drawscale,
+                            darkscale=params.darkscale, secondaryscale=params.secondaryscale)
             grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
             hitsvec = []
             nedges = [0]
@@ -84,19 +101,21 @@ def runprocess(params):
                     addresses += [len(hitsvec)]
                     hitsvec += h
             grp.create_dataset('Xhits', data=hitsvec, dtype=np.float32)
-            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint16)
-            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint16)
-            grp.attrs.create('nangles', params.nangles,dtype=np.uint16)
-            grp.attrs.create('nenergies', params.nenergies,dtype=np.uint16)
-            grp.attrs.create('drawscale', params.drawscale,dtype=np.uint16)
+            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint8)
+            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint8)
+            grp.attrs.create('nangles', params.nangles,dtype=np.uint8)
+            grp.attrs.create('nenergies', params.nenergies,dtype=np.uint8)
+            grp.attrs.create('drawscale', params.drawscale,dtype=np.uint8)
+            grp.attrs.create('darkscale', params.darkscale,dtype=np.float8)
+            grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float8)
 
-            img = np.zeros((params.nangles,params.nenergies), dtype=np.uint8)
+            img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
 
             for a in range(grp.attrs['nangles']):
                 offset = grp['Xaddresses'][()][a]
                 nhits = grp['Xnedges'][()][a]
-                img[a,:] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint8)
-            grp.create_dataset('Ximg', data=img, dtype=np.uint8)
+                img[a,:] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint16)
+            grp.create_dataset('Ximg', data=img, dtype=np.uint16)
 
             grp.attrs.create('Test', False)
             grp.attrs.create('Train', False)
