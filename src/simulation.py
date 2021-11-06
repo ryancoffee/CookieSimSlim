@@ -9,7 +9,7 @@ import utils
 
 
 class Params:
-    def __init__(self, path, name, n):
+    def __init__(self, path, name, n, seed):
         self.ofpath = path
         self.ofname = name
         self.nimages = n
@@ -19,6 +19,8 @@ class Params:
         self.darkscale = 0.001
         self.secondaryscale = 0.01
         self.testsplit = 0.1
+        self.rngseed = 1
+        self.rng = np.random.default_rng(seed)
 
     def setnenergies(self, n):
         self.nenergies = int(n)
@@ -40,6 +42,11 @@ class Params:
         self.nimages = n
         return self
 
+    def setrngseed(self, n):
+        self.rngseed = n
+        self.rng = np.random.default_rnf(n)
+        return self
+
     def settestsplit(self, r):  # this is the ratio of test images to total images generated
         self.testsplit = r
         return self
@@ -58,6 +65,9 @@ class Params:
     def getdarkscale(self):
         return self.darkscale
 
+    def getrngseed(self):
+        return self.rngseed
+
     def getnenergies(self):
         return self.nenergies
 
@@ -75,19 +85,14 @@ class Params:
 
 
 def runprocess(params):
-    rng = np.random.default_rng()
     nimages = params.nimages
-    tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
-    keyhash = hashlib.sha256(bytearray(map(ord, tstring)))
-    with h5py.File('%s/%s.%s.h5'%(params.ofpath,params.ofname,os.getpid()), 'a') as f:
+    rngseedstr = '%03i'%(params.rngseed)
+    keyhash = hashlib.sha256(bytearray(map(ord, rngseedstr)))
+    with h5py.File('%s/%s.rngseed%i.h5'%(params.ofpath,params.ofname,params.rngseed), 'w') as f:
         for i in range(nimages):
-            bs = bytearray(map(ord, 'shot_%i_' % i))
-            keyhash.update(bs)
-            key = keyhash.hexdigest()
+            key = 'shot_%i'%i
             grp = f.create_group(key)
-            X, Y = utils.build_XY(nenergies=params.nenergies,
-                            nangles=params.nangles, drawscale=params.drawscale,
-                            darkscale=params.darkscale, secondaryscale=params.secondaryscale)
+            X, Y = utils.build_XY(params)
             grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
             hitsvec = []
             nedges = [0]
@@ -108,6 +113,7 @@ def runprocess(params):
             grp.attrs.create('drawscale', params.drawscale,dtype=np.uint8)
             grp.attrs.create('darkscale', params.darkscale,dtype=np.float8)
             grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float8)
+            grp.attrs.create('rngseed', params.rngseed,dtype=np.int16)
 
             img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
 
@@ -119,7 +125,7 @@ def runprocess(params):
 
             grp.attrs.create('Test', False)
             grp.attrs.create('Train', False)
-            if rng.uniform() < params.testsplit:
+            if params.rng.uniform() < params.testsplit:
                 grp.attrs['Test'] = True
             else:
                 grp.attrs['Train'] = True
