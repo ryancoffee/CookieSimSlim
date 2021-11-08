@@ -22,7 +22,7 @@ def build_XY(params):
     centers = rng.random(ncenters)*x.shape[0]
     amp = rng.normal(30,3)
     intens = [rng.poisson(10)/10 for c in centers]
-    ymat = darkscale * np.ones((params.nangles,x.shape[0]),dtype=float)
+    ymat = params.darkscale * np.ones((params.nangles,x.shape[0]),dtype=float)
     if ncenters>0:
         ymat += float(params.secondaryscale)*np.sum(intens)/float(ncenters) #* np.ones((nangles,x.shape[0]),dtype=float)
 
