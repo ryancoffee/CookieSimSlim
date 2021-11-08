@@ -1,9 +1,8 @@
 #!/bin/bash
 
 opath=~/data/h5files
-nthreads=10
-nangles=128
-nimages=10
+nthreads=20
+nimages=50000
 
 [ -d "$opath" ] || mkdir -p $opath
 outfile=${opath}/sim_128e_128a.h5

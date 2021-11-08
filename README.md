@@ -6,8 +6,8 @@ Slim simulator for LCLS-SLAC CookieBox detector
 ## The Probability Distribution Function (PDF)  
 
 ```bash  
-./src/prob_dist.py -ofname <outfilename.h5> <optional> -n_images <nimages> -n_angles <nchannels> -n_threads <nthreads>    
-./src/prob_dist.py -ofname /home/user/herigo/withmydata/somewhere.h5 -n_images 50000 -n_angles 128 -n_threads 20    
+./src/run_sim.py -ofname <outfilename.h5> <optional> -n_images <nimages> -n_threads <nthreads>    
+./src/run_sim.py -ofname /home/user/herigo/withmydata/somewhere.h5 -n_images 50000 -n_threads 20
 ```  
 
 An example of running this for a simple test on two threads with 128 angle channels and 10 images each thread is as follows,
@@ -16,7 +16,7 @@ which in principle should be run as a script:
 opath=~/data/h5files  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/prob_dist.py -ofname $outfle -n_threads 2 -n_images 10 -drawscale 8 -darkscale .001 -secondaryscale .01
+./src/run_sim.py -ofname $outfle -n_threads 2 -n_images 10 -drawscale 4 -darkscale .001 -secondaryscale .01
 ```  
 
 
@@ -42,11 +42,14 @@ outfile=${opath}/test.h5
 
 ```bash
 nimgs=10
-./src/prob_dist.py -ofname ~/data/h5files/mainbranch.h5 -n_threads 2 -n_images $nimgs -drawscale 8
-procid=11465
-./src/images2ascii.py -ifname ~/data/h5files/newmainbranch.$procid.h5 -ofpath ~/data/ascii -n_images $nimgs
-im=3
-gnuplot -c ./figs/plotting.sample_Ximg.gnuplot /home/coffee/data/ascii/newmainbranch.$procid.Ximg00$im.ascii /home/coffee/data/ascii/newmainbranch.$procid.Ypdf00$im.ascii figs/trythis$im.png
+nthreads=2
+./src/run_sim.py -ofname ~/data/h5files/slac_cbsim.h5 -n_threads $nthreads -n_images $nimgs
+for tid in `seq 0 $nthread`; do
+	./src/images2ascii.py -ifname ~/data/h5files/newmainbranch.$tid.h5 -ofpath ~/data/ascii -n_images $nimgs
+	for im in `seq 0 3`; do
+	gnuplot -c ./figs/plotting.sample_Ximg.gnuplot /home/coffee/data/ascii/newmainbranch.$tid.Ximg00$im.ascii /home/coffee/data/ascii/newmainbranch.$tid.Ypdf00$im.ascii figs/sampleimg.$im.png
+	done
+done
 ```
 
 

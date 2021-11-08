@@ -1,9 +1,0 @@
-FROM python:3.9.7-buster
-
-# Install python dependencies
-RUN pip3 install numpy==1.21.2
-RUN pip3 install h5py==3.4.0
-RUN apt install gnuplot vim bc 
-
-# Copy CookieSimSlim Files
-# COPY ./CookieSimSlim
