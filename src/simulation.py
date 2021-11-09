@@ -115,13 +115,13 @@ def runprocess(params):
             grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float32)
             grp.attrs.create('rngseed', params.rngseed,dtype=np.int16)
 
-            img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
+            img = np.zeros((params.nangles,params.nenergies), dtype=np.uint8)
 
             for a in range(grp.attrs['nangles']):
                 offset = grp['Xaddresses'][()][a]
                 nhits = grp['Xnedges'][()][a]
-                img[a,:] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint16)
-            grp.create_dataset('Ximg', data=img, dtype=np.uint16)
+                img[a,:] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint8)
+            grp.create_dataset('Ximg', data=img, dtype=np.uint8)
 
             grp.attrs.create('Test', False)
             grp.attrs.create('Train', False)

@@ -3,12 +3,27 @@
 ===============  
 Slim simulator for LCLS-SLAC CookieBox detector  
 
-## The Probability Distribution Function (PDF)  
+The basic interface is to run wither the full or the simple scripts... editing to change the output file directory...  
+```bash
+./runsimple.bash
+```
+but this still gives an overflow warning... I can't yet figure that out.  
+But the full simulation is similarly  
+```bash
+./runfull.bash
+```
 
+## Driving directly  
+Give only the -ofname arguement for the default run.  
 ```bash  
-./src/run_sim.py -ofname <outfilename.h5> <optional> -n_images <nimages> -n_threads <nthreads>    
-./src/run_sim.py -ofname /home/user/herigo/withmydata/somewhere.h5 -n_images 50000 -n_threads 20
+./src/run_sim.py -ofname /home/user/herigo/withmydata/somewhere.h5
 ```  
+
+
+And this is if you want control for something other than 50000 images/file and 20 files.  
+```bash
+./src/run_sim.py -ofname <outfilename.h5> -n_images <nimages> -n_threads <nthreads>    
+```
 
 An example of running this for a simple test on two threads with 128 angle channels and 10 images each thread is as follows,
 which in principle should be run as a script:  
@@ -16,7 +31,7 @@ which in principle should be run as a script:
 opath=~/data/h5files  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/run_sim.py -ofname $outfle -n_threads 2 -n_images 10 -drawscale 4 -darkscale .001 -secondaryscale .01
+./src/run_sim.py -ofname $outfle -n_threads 2 -n_images 10 
 ```  
 
 

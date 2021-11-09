@@ -14,7 +14,7 @@ parser.add_argument('-ofname', type=str,required=True, help='ouput path and base
 parser.add_argument('-n_threads',   type=int, default=20,required=False, help='DONT USE: Number of Threads')
 parser.add_argument('-n_angles',type=int, default=128,required=False, help='DONT USE: Number of angles')
 parser.add_argument('-n_images', type=int,default=50000,required=False, help='DONT USE: Number of images per thread')
-parser.add_argument('-drawscale', type=int,default=2,required=False, help='DONT USE: Scaling for draws from the distribution, e.g. scale the number of electrons')
+parser.add_argument('-drawscale', type=int,default=8,required=False, help='DONT USE: Scaling for draws from the distribution, e.g. scale the number of electrons')
 parser.add_argument('-darkscale', type=float,default=0.001,required=False, help='DONE USE: Scaling for the dark count haze that is independent total intensity')
 parser.add_argument('-secondaryscale', type=float,default=0.01,required=False, help='DONT USE: Scaling for the secondary counts as proportion of total intensity')
 parser.add_argument('-testsplit', type=float,default=0.1,required=False, help='DONT USE: test images as percent of total')
