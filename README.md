@@ -21,7 +21,8 @@ outfile=${opath}/test.h5
 
 
 .h5 file structure: (assuming 64 angles and 128 energy bins)  
-* image	-- still setting the key as a hash... avoiding collision since could be adding images to existing file.... though really unlikely since using PID in filename to avoid fileaccess collisions.
+* image	-- still setting the key as a hash to avoiding collision since could be adding images to existing file.... though really unlikely since using PID in filename to avoid fileaccess collisions.  
+This may need revisiting... maybe each file update would start a new dataset with a new rngseed?
 	* Xhits (N,)  
 	* Xaddresses (nangles,)  
 	* Xnedges (nangles,)  
@@ -43,10 +44,7 @@ outfile=${opath}/test.h5
 ```bash
 nimgs=10
 ./src/prob_dist.py -ofname ~/data/h5files/mainbranch.h5 -n_threads 2 -n_images $nimgs -drawscale 8
-procid=11465
-./src/images2ascii.py -ifname ~/data/h5files/newmainbranch.$procid.h5 -ofpath ~/data/ascii -n_images $nimgs
+./src/images2ascii.py -ifname ~/data/h5files/newmainbranch.rngseed1.h5 -ofpath ~/data/ascii -n_images $nimgs
 im=3
 gnuplot -c ./figs/plotting.sample_Ximg.gnuplot /home/coffee/data/ascii/newmainbranch.$procid.Ximg00$im.ascii /home/coffee/data/ascii/newmainbranch.$procid.Ypdf00$im.ascii figs/trythis$im.png
 ```
-
-
