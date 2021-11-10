@@ -106,8 +106,8 @@ def runprocess(params):
                     addresses += [len(hitsvec)]
                     hitsvec += h
             grp.create_dataset('Xhits', data=hitsvec, dtype=np.float32)
-            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint8)
-            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint8)
+            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint32)
+            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint32)
             grp.attrs.create('nangles', params.nangles,dtype=np.uint8)
             grp.attrs.create('nenergies', params.nenergies,dtype=np.uint8)
             grp.attrs.create('drawscale', params.drawscale,dtype=np.uint8)
