@@ -20,9 +20,9 @@ Give only the -ofname arguement for the default run.
 ```  
 
 
-And this is if you want control for something other than 50000 images/file and 20 files.  
+And this is if you want control for something other than 50000 images/file and 20 files, or if you want to run threads from other than 0  
 ```bash
-./src/run_sim.py -ofname <outfilename.h5> -n_images <nimages> -n_threads <nthreads>    
+./src/run_sim.py -ofname <outfilename.h5> -n_images <nimages> -n_threads <nthreads>  -offset_threads <start threadid> 
 ```
 
 An example of running this for a simple test on two threads with 128 angle channels and 10 images each thread is as follows,
@@ -31,12 +31,13 @@ which in principle should be run as a script:
 opath=~/data/h5files  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/run_sim.py -ofname $outfle -n_threads 2 -n_images 10 
+./src/run_sim.py -ofname $outfle -n_threads 2 -n_images 10 -offset_threads 2
 ```  
+This would run rngseed2 through rngseed12  
 
 
-.h5 file structure: (assuming 64 angles and 128 energy bins)  
-* image	-- still setting the key as a hash... avoiding collision since could be adding images to existing file.... though really unlikely since using PID in filename to avoid fileaccess collisions.
+filehead.rngseed#.h5 file structure: (assuming 128 angles and 128 energy bins)  
+* image	-- setting the key as shot_id and overwriting instead of appending.  
 	* Xhits (N,)  
 	* Xaddresses (nangles,)  
 	* Xnedges (nangles,)  

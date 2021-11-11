@@ -12,6 +12,7 @@ import argparse
 parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond Angular Streaking\nFixed parameters and rng seeds\n-ofname is only required arguement')
 parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
 parser.add_argument('-n_threads',   type=int, default=20,required=False, help='DONT USE: Number of Threads')
+parser.add_argument('-offset_threads',   type=int, default=0,required=False, help='DONT USE: Offset for Threads, used to produce rngseed[offset] to rngseed[offset + n_threads]')
 parser.add_argument('-n_angles',type=int, default=128,required=False, help='DONT USE: Number of angles')
 parser.add_argument('-n_images', type=int,default=50000,required=False, help='DONT USE: Number of images per thread')
 parser.add_argument('-drawscale', type=int,default=8,required=False, help='DONT USE: Scaling for draws from the distribution, e.g. scale the number of electrons')
@@ -32,7 +33,7 @@ def main():
 
     if not os.path.exists(m.group(1)):
         os.makedirs(m.group(1))
-    paramslist = [Params(m.group(1),m.group(2),args.n_images,i) for i in range(args.n_threads)]
+    paramslist = [Params(m.group(1),m.group(2),args.n_images,i+args.offset_threads) for i in range(args.n_threads)]
     for p in paramslist:
         p.setnangles(args.n_angles).setdrawscale(args.drawscale).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
 
