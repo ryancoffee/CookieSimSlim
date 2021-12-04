@@ -15,6 +15,10 @@ parser.add_argument('-n_threads',   type=int, default=2, help='Number of Threads
 parser.add_argument('-n_angles',type=int, default=128, help='Number of angles')
 parser.add_argument('-n_images', type=int,default=10, help='Number of images per thread')
 parser.add_argument('-drawscale', type=int,default=8,required=False, help='Scaling for draws from the distribution, e.g. scale the number of electrons')
+parser.add_argument('-drawscalevar', type=int,default=0,required=False, help='Sinusoidal variation (over nthreads)  for scaling the number of draws from the distribution, e.g. scale the number of electrons')
+parser.add_argument('-centralenergy', type=float,default=50.0,required=False, help='central photon energy')
+parser.add_argument('-centralenergywidth', type=float,default=5.0,required=False, help='central photon energy')
+parser.add_argument('-centralenergyvar', type=float,default=0.0,required=False, help='central photon energy variation as sinusoid over nthreads')
 parser.add_argument('-darkscale', type=float,default=0.1,required=False, help='Scaling for the dark count haze that is independent total intensity')
 parser.add_argument('-secondaryscale', type=float,default=0.1,required=False, help='Scaling for the secondary counts as proportion of total intensity')
 parser.add_argument('-testsplit', type=float,default=0.1,required=False, help='test images as percent of total')
@@ -34,6 +38,7 @@ def main():
         os.makedirs(m.group(1))
     paramslist = [Params(m.group(1),m.group(2),args.n_images) for i in range(args.n_threads)]
     for p in paramslist:
+        p.setnangles(args.n_angles).setdrawscale(args.drawscale).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
         p.setnangles(args.n_angles).setdrawscale(args.drawscale).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
 
     with mp.Pool(processes=len(paramslist)) as pool:
