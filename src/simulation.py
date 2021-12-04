@@ -73,12 +73,19 @@ class Params:
     def getnimages(self):
         return self.nimages
 
+    def setcentralenegy(self,x):
+        self.centralenergy = x 
+        return self
+
+    def setcentralenergywidth(self,x):
+        self.centralenergywidth = x
+        return self
 
 def runprocess(params):
     rng = np.random.default_rng()
     nimages = params.nimages
-    tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
-    keyhash = hashlib.sha256(bytearray(map(ord, tstring)))
+    #tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
+    #keyhash = hashlib.sha256(bytearray(map(ord, tstring)))
     with h5py.File('%s/%s.%s.h5'%(params.ofpath,params.ofname,os.getpid()), 'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord, 'shot_%i_' % i))
@@ -101,13 +108,16 @@ def runprocess(params):
                     addresses += [len(hitsvec)]
                     hitsvec += h
             grp.create_dataset('Xhits', data=hitsvec, dtype=np.float32)
-            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint8)
-            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint8)
+            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint32)
+            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint16)
             grp.attrs.create('nangles', params.nangles,dtype=np.uint8)
             grp.attrs.create('nenergies', params.nenergies,dtype=np.uint8)
             grp.attrs.create('drawscale', params.drawscale,dtype=np.uint8)
-            grp.attrs.create('darkscale', params.darkscale,dtype=np.float8)
-            grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float8)
+            grp.attrs.create('darkscale', params.darkscale,dtype=np.float16)
+            grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float16)
+            grp.attrs.create('centralenergy', params.centralenergy,dtype=np.float16)
+            grp.attrs.create('centralenergyvar', params.centralenergyvar,dtype=np.float16)
+            grp.attrs.create('centralenergywidth', params.centralenergywidth,dtype=np.float16)
 
             img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
 

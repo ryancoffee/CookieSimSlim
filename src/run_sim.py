@@ -6,6 +6,7 @@ import sys
 import multiprocessing as mp
 import os
 import re
+import math
 
 import argparse
 
@@ -37,9 +38,12 @@ def main():
     if not os.path.exists(m.group(1)):
         os.makedirs(m.group(1))
     paramslist = [Params(m.group(1),m.group(2),args.n_images) for i in range(args.n_threads)]
-    for p in paramslist:
-        p.setnangles(args.n_angles).setdrawscale(args.drawscale).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
-        p.setnangles(args.n_angles).setdrawscale(args.drawscale).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
+    sz = len(paramslist)
+    for i,p in enumerate(paramslist):
+        p.setnangles(args.n_angles).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
+        p.setdrawscale(args.drawscale + int(args.drawscalevar*math.cos(float(i)*2.0*math.pi/float(sz))))
+        p.setcentralenergy(args.centralenergy + args.centralenergyvar*math.sin(float(i)*2.0*math.pi/float(sz)))
+        p.setcentralenergywidth(args.centralenergywidth)
 
     with mp.Pool(processes=len(paramslist)) as pool:
         pool.map(runprocess,paramslist)
