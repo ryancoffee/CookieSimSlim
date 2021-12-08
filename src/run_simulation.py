@@ -22,6 +22,10 @@ parser.add_argument('-centralenergywidth', type=float,default=5.0,required=False
 parser.add_argument('-centralenergyvar', type=float,default=0.0,required=False, help='central photon energy variation as sinusoid over nthreads')
 parser.add_argument('-darkscale', type=float,default=0.1,required=False, help='Scaling for the dark count haze that is independent total intensity')
 parser.add_argument('-secondaryscale', type=float,default=0.1,required=False, help='Scaling for the secondary counts as proportion of total intensity')
+parser.add_argument('-kickstrength', type=float,default=30,required=False, help='angular streaking kick trength')
+parser.add_argument('-kickstrengthvar', type=float,default=5,required=False, help='variation of kick strength due to streaking laser fluctuations')
+parset.add_argument('-polstrength', type=float,default=0,required=False, help='anisotropy is 1 + polstrength*cos(2*theta))')
+parset.add_argument('-polstrengthvar', type=float,default=0,required=False, help='variation of anisotropy')
 parser.add_argument('-testsplit', type=float,default=0.1,required=False, help='test images as percent of total')
 
 def main():
@@ -43,10 +47,11 @@ def main():
         p.setnangles(args.n_angles).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
         p.setdrawscale(args.drawscale + int(args.drawscalevar*math.cos(float(i)*2.0*math.pi/float(sz))))
         p.setcentralenergy(args.centralenergy + args.centralenergyvar*math.sin(float(i)*2.0*math.pi/float(sz)))
+        p.setkickstrength(args.kickstrength + args.kickstrengthvar*math.sin(-math.pi/4. + float(i)*2.0*math.pi/float(sz)) + args.kickstrengthnoise() )
         p.setcentralenergywidth(args.centralenergywidth)
 
     with mp.Pool(processes=len(paramslist)) as pool:
-        pool.map(runprocess,paramslist)
+        pool.map(runstreaking,paramslist)
 
     return
 
