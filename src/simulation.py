@@ -27,8 +27,8 @@ class Params:
         self.centralenergy = 50
         self.centralenergywidth = 10
         self.kickstrength = 30.
-        self.polstrength = 1.
-        self.poldirection = 0.
+        self.polstrengths = [1.]
+        self.poldirections = [0.]
         self.streaking = True
         self.spectroscopy = False
 
@@ -84,7 +84,7 @@ class Params:
         self.secondaryscale = r
         return self
 
-    def setcentralenegy(self,x):    #setting the x-ray central energy (for now above retardation)
+    def setcentralenergy(self,x):    #setting the x-ray central energy (for now above retardation)
         self.centralenergy = x 
         return self
 
@@ -112,7 +112,7 @@ class Params:
         self.saseamps = x
         return self
 
-    def setpoldirections(self,x): # this is the direction of the major axis of the ellipse, from 0 to pi
+    def setpoldirections(self,x): # this is a list of the directions of the major axis of the ellipse, from 0 to pi, this should be sasecenters long
         self.poldirections = x
         return self
 
@@ -250,17 +250,19 @@ def build_XY(params):
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     params.setphases( list(rng.random(ncenters)*2.*np.pi) )
-    params.setamps( [rng.poisson(10)/10 for c in centers] )
-    ymat = darkscale * np.ones((nangles,x.shape[0]),dtype=float)
+    params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
+    params.setpolstrengths([1. for i in range(ncenters)])
+    params.setpoldirections([0. for i in range(ncenters)])
+    ymat = params.darkscale * np.ones((params.nangles,x.shape[0]),dtype=float)
     if ncenters>0:
-        ymat += float(secondaryscale)*np.sum(params.saseamps)/float(len(params.saseamps)) #* np.ones((nangles,x.shape[0]),dtype=float)
+        ymat += float(params.secondaryscale)*np.sum(params.saseamps)/float(len(params.saseamps)) #* np.ones((params.nangles,x.shape[0]),dtype=float)
 
     for i,c in enumerate(params.sasecenters):
-        for a in range(nangles):
+        for a in range(params.nangles):
             kick = 0.
             if params.streaking:
-                kick = params.kickstrength*np.cos(a*2.*np.pi/nangles + params.sasephases[i])
-            pol = params.polstrength/2.*(1. + np.cos(a*4.*np.pi/nangles + params.poldirections[i]) )
+                kick = params.kickstrength*np.cos(a*2.*np.pi/params.nangles + params.sasephases[i])
+            pol = params.polstrengths[i]/2.*(1. + np.cos(a*4.*np.pi/params.nangles + params.poldirections[i]) )
             ymat[a,:] += params.saseamps[i]* pol * utils.cossq( x , params.sasewidth , c + kick ) # this produces the 2D PDF
     cmat = np.cumsum(ymat,axis=1)
     # the number of draws for each angle should be proportional to the total sum of that angle
