@@ -15,16 +15,16 @@ class Params:
         self.nimages = n
         self.nenergies = 128
         self.nangles = 128
-        self.drawscale = 8
-        self.darkscale = 0.001
-        self.secondaryscale = 0.01
+        self.drawscale = 1
+        self.darkscale = 0.0005
+        self.secondaryscale = 0.002
         self.testsplit = 0.1
         self.sasescale = 3
-        self.sasewidth = 1.0
+        self.sasewidth = 3.0
         self.sasecenters = []
         self.sasephases = []
         self.saseamps = []
-        self.centralenergy = 50
+        self.centralenergy = 64 
         self.centralenergywidth = 10
         self.kickstrength = 30.
         self.polstrengths = [1.]
@@ -221,6 +221,8 @@ def runprocess(params):
             grp.attrs.create('sasecenters', params.sasecenters,dtype=np.float16)
             grp.attrs.create('sasephases', params.sasephases,dtype=np.float16)
             grp.attrs.create('saseamps', params.saseamps,dtype=np.float16)
+            grp.attrs.create('poldirections', params.poldirections,dtype=np.float16)
+            grp.attrs.create('polstrengths', params.polstrengths,dtype=np.float16)
             grp.attrs.create('kickstregth', params.kickstrength,dtype=np.float16)
 
             img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)

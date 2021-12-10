@@ -16,7 +16,8 @@ which in principle should be run as a script:
 opath=~/data/h5files  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/run_simulation.py -ofname $outfile -n_threads 16 -n_images 20 -polstrength 1 -polstrengthvar 1 -centralenergyvar 40 -kickstrengthvar 10
+./src/run_simulation.py -ofname /media/coffee/9C33-6BBD/CookieSimSlim_data/lowsig.h5 -n_threads 16 -n_images 20 -polstrength 1 -polstrengthvar 1 -centralenergy 64 -centralenergyvar 40 -kickstrengthvar 10 -drawscale 1
+
 ```  
 
 
