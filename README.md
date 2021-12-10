@@ -16,8 +16,9 @@ which in principle should be run as a script:
 opath=~/data/h5files  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/run_streaking.py -ofname $outfle -n_threads 2 -n_images 10 -drawscale 8 -darkscale .001 -secondaryscale .01
+./src/run_simulation.py -ofname $outfile -n_threads 16 -n_images 20 -polstrength 1 -polstrengthvar 1 -centralenergyvar 40 -kickstrengthvar 10
 ```  
+
 
 
 .h5 file structure: (assuming 64 angles and 128 energy bins)  

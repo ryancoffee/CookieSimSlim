@@ -31,6 +31,16 @@ class Params:
         self.poldirections = [0.]
         self.streaking = True
         self.spectroscopy = False
+        self.tid = 0
+        self.rng = np.random.default_rng()
+
+    def settid(self,x):
+        self.tid = x
+        self.rng = np.random.default_rng(x)
+        return self
+
+    def gettid(self):
+        return self.tid
 
     def setstreaking(self):
         self.streaking = True 
@@ -174,11 +184,10 @@ class Params:
 
 
 def runprocess(params):
-    rng = np.random.default_rng()
     nimages = params.nimages
     tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha1(bytearray(map(ord, tstring)))
-    with h5py.File('%s/%s.%s.h5'%(params.ofpath,params.ofname,os.getpid()), 'a') as f:
+    with h5py.File('%s/%s.%s.h5'%(params.ofpath,params.ofname,params.tid), 'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord, 'shot_%i_' % i))
             keyhash.update(bs)
@@ -224,7 +233,7 @@ def runprocess(params):
 
             grp.attrs.create('Test', False)
             grp.attrs.create('Train', False)
-            if rng.uniform() < params.testsplit:
+            if params.rng.uniform() < params.testsplit:
                 grp.attrs['Test'] = True
             else:
                 grp.attrs['Train'] = True
@@ -245,26 +254,27 @@ def runprocess(params):
     return
 
 def build_XY(params):
-    rng = np.random.default_rng()
+    rng = params.rng
     x = np.arange(params.nenergies,dtype=float)
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
-    params.setpolstrengths([1. for i in range(ncenters)])
-    params.setpoldirections([0. for i in range(ncenters)])
-    ymat = params.darkscale * np.ones((params.nangles,x.shape[0]),dtype=float)
+    params.setpolstrengths(list(rng.random(ncenters)))
+    params.setpoldirections(list(rng.random(ncenters)*np.pi))
+    bgmat = params.darkscale * np.ones((params.nangles,x.shape[0]),dtype=float)
+    ymat = np.zeros((params.nangles,x.shape[0]),dtype=float)
     if ncenters>0:
-        ymat += float(params.secondaryscale)*np.sum(params.saseamps)/float(len(params.saseamps)) #* np.ones((params.nangles,x.shape[0]),dtype=float)
+        bgmat += float(params.secondaryscale)*np.sum(params.saseamps)/float(len(params.saseamps)) #* np.ones((params.nangles,x.shape[0]),dtype=float)
 
     for i,c in enumerate(params.sasecenters):
         for a in range(params.nangles):
             kick = 0.
             if params.streaking:
                 kick = params.kickstrength*np.cos(a*2.*np.pi/params.nangles + params.sasephases[i])
-            pol = params.polstrengths[i]/2.*(1. + np.cos(a*4.*np.pi/params.nangles + params.poldirections[i]) )
+            pol = 0.5*(1. + params.polstrengths[i]*np.cos(a*4.*np.pi/params.nangles + params.poldirections[i]) )
             ymat[a,:] += params.saseamps[i]* pol * utils.cossq( x , params.sasewidth , c + kick ) # this produces the 2D PDF
-    cmat = np.cumsum(ymat,axis=1)
+    cmat = np.cumsum(ymat + bgmat,axis=1)
     # the number of draws for each angle should be proportional to the total sum of that angle
     hits = []
     for a in range(params.nangles):
