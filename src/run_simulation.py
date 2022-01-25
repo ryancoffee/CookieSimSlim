@@ -2,6 +2,7 @@
 
 import h5py
 from simulation import Params, runprocess
+import utils
 import sys
 import multiprocessing as mp
 import os
