@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond
 parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
 parser.add_argument('-n_threads',   type=int, default=2, help='Number of Threads')
 parser.add_argument('-n_angles',type=int, default=128, help='Number of angles')
+parser.add_argument('-n_energies',type=int, default=128, help='Number of energy bins [in eV for now]')
 parser.add_argument('-n_images', type=int,default=10, help='Number of images per thread')
 parser.add_argument('-drawscale', type=int,default=1,required=False, help='Scaling for draws from the distribution, e.g. scale the number of electrons')
 parser.add_argument('-drawscalevar', type=int,default=0,required=False, help='Sinusoidal variation (over nthreads)  for scaling the number of draws from the distribution, e.g. scale the number of electrons')

@@ -11,7 +11,7 @@ which in principle should be run as a script:
 opath=~/data/h5files  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/run_simulation.py -ofname /media/coffee/9C33-6BBD/CookieSimSlim_data/lowsig.h5 -n_threads 2 -n_images 20 -polstrength 1 -polstrengthvar 1 -centralenergy 64 -centralenergyvar 40 -kickstrengthvar 10 -drawscale 1
+./src/run_simulation.py -ofname /media/coffee/9C33-6BBD/CookieSimSlim_data/lowsig.h5 -n_threads 2 -n_images 20 -n_angles 16 -n_energies 128 -polstrength 1 -polstrengthvar 1 -centralenergy 64 -centralenergyvar 40 -kickstrengthvar 10 -drawscale 1
 ```  
 
 ## HDF5 file structure  
@@ -36,5 +36,10 @@ This may need revisiting... maybe each file update would start a new dataset wit
 		* Train = bool  
 * image  
 * image  
+
+## Reducing dimensionality  
+
+![plot](./figs/plotting.dctmasking.png)
+
 
 
