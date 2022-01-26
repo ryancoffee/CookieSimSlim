@@ -39,6 +39,8 @@ This may need revisiting... maybe each file update would start a new dataset wit
 
 ## Reducing dimensionality  
 
+To reduce dimensionality, using a 2D dct and taking the variance over all the keys in a single .h5 file.  Then using that variance and cutting it at the 0.01 of max variance in the dct coeffs (see ./src/testDCTresolution.py).  This mask is then used on the individual images which are then back transformed for comparison to both raw (left) and truth (right)
+
 ![plot](./figs/plotting.dctmasking.png)
 
 
