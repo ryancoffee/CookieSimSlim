@@ -23,6 +23,12 @@ def images2ascii(fname,nimages):
     return Ximgs,Yimgs
 
 
+def dct_1d(x,axis=0):
+    return dct(x,axis=axis,type=2)
+
+def idct_1d(x,axis=0):
+    return dct(x,axis=axis,type=3)/2/x.shape[axis]
+
 def dct_2d(x):
     return(dct(dct(x,axis=0,type=2),axis=1,type=2))
 

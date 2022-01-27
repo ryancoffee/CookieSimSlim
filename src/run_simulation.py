@@ -14,6 +14,7 @@ import argparse
 parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond Angular Streaking')
 parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
 parser.add_argument('-n_threads',   type=int, default=2, help='Number of Threads')
+parser.add_argument('-offset_threads',   type=int, default=0,required=False, help='DONT USE: Offset for Threads, used to produce rngseed[offset] to rngseed[offset + n_threads]')
 parser.add_argument('-n_angles',type=int, default=128, help='Number of angles')
 parser.add_argument('-n_energies',type=int, default=128, help='Number of energy bins [in eV for now]')
 parser.add_argument('-n_images', type=int,default=10, help='Number of images per thread')
@@ -48,8 +49,8 @@ def main():
     paramslist = [Params(m.group(1),m.group(2),args.n_images) for i in range(args.n_threads)]
     sz = len(paramslist)
     for i,p in enumerate(paramslist):
-        p.settid(i).setstreaking()
-        p.setnangles(args.n_angles).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
+        p.settid(i+args.offset_threads).setstreaking()
+        p.setnenergies(args.n_energies).setnangles(args.n_angles).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
         p.setdrawscale(args.drawscale + int(args.drawscalevar*math.cos(float(i)*2.0*math.pi/float(sz))))
         p.setsasescale(args.sasescale + int(args.sasescalevar*math.cos(math.pi/4. + float(i)*2.0*math.pi/float(sz)) ))
         p.setcentralenergy(args.centralenergy + args.centralenergyvar*math.sin(float(i)*2.0*math.pi/float(sz)))

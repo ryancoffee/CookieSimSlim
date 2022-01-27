@@ -32,6 +32,7 @@ class Params:
         self.streaking = True
         self.spectroscopy = False
         self.tid = 0
+        self.threadoffset = 0
         self.rng = np.random.default_rng()
 
     def settid(self,x):
@@ -196,7 +197,7 @@ def runprocess(params):
             X, Y = build_XY(params)
             grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
             hitsvec = []
-            nedges = [0]
+            nedges = []
             addresses = []
             for h in X:
                 if len(h) == 0:
@@ -268,7 +269,6 @@ def build_XY(params):
     ymat = np.zeros((params.nangles,x.shape[0]),dtype=float)
     if ncenters>0:
         bgmat += float(params.secondaryscale)*np.sum(params.saseamps)/float(len(params.saseamps)) #* np.ones((params.nangles,x.shape[0]),dtype=float)
-
     for i,c in enumerate(params.sasecenters):
         for a in range(params.nangles):
             kick = 0.
