@@ -37,6 +37,15 @@ This may need revisiting... maybe each file update would start a new dataset wit
 * image  
 * image  
 
+
+## Collecting images
+In order to make the output more managable, there is a script 
+```bash
+/src/collect_images -ifnames <list of .h5 filenames to process into individual Train and Test .h5 files>
+```
+The output should be two files, using the front ofo the filename from the list and segregating the Train and Test into consistently named seperate files.  
+In each file, there will be a pair of datasets, one for Y and another for X.
+
 ## Reducing dimensionality  
 
 To reduce dimensionality, using a 2D dct and taking the variance over all the keys in a single .h5 file.  Then using that variance and cutting it at the 0.01 of max variance in the dct coeffs (see ./src/testDCTresolution.py).  This mask is then used on the individual images which are then back transformed for comparison to both raw (left) and truth (right)
