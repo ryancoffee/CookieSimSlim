@@ -6,16 +6,18 @@ import time
 import re
 import os
 import utils
+import binEncodings as be
 
 
 class Params:
     def __init__(self, path, name, n):
+        self.baseencode = be.storebase
         self.ofpath = path
         self.ofname = name
         self.nimages = n
         self.nenergies = 128
         self.nangles = 128
-        self.drawscale = 1
+        self.drawscale = 0.1
         self.darkscale = 0.0005
         self.secondaryscale = 0.002
         self.testsplit = 0.1
@@ -68,7 +70,7 @@ class Params:
         return self
 
     def setdrawscale(self, n):
-        self.drawscale = int(n)
+        self.drawscale = n
         return self
 
     def setofname(self, name):
@@ -212,7 +214,7 @@ def runprocess(params):
             grp.create_dataset('Xnedges', data=nedges, dtype=np.uint16)
             grp.attrs.create('nangles', params.nangles,dtype=np.uint8)
             grp.attrs.create('nenergies', params.nenergies,dtype=np.uint8)
-            grp.attrs.create('drawscale', params.drawscale,dtype=np.uint8)
+            grp.attrs.create('drawscale', params.drawscale,dtype=np.float16)
             grp.attrs.create('darkscale', params.darkscale,dtype=np.float16)
             grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float16)
             grp.attrs.create('centralenergy', params.centralenergy,dtype=np.float16)
@@ -227,12 +229,20 @@ def runprocess(params):
             grp.attrs.create('kickstregth', params.kickstrength,dtype=np.float16)
 
             img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
+            words = []
+            overcounts = []
 
             for a in range(grp.attrs['nangles']):
                 offset = grp['Xaddresses'][()][a]
                 nhits = grp['Xnedges'][()][a]
                 img[a,:] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint16)
+                w,o = be.encode(hitsvec[offset:offset+nhits], (params.nenergies//params.baseencode + 1)* params.baseencode)
+                words += [w]
+                overcounts += [o]
             grp.create_dataset('Ximg', data=img, dtype=np.uint16)
+            grp.create_dataset('words', data=np.row_stack(words),dtype=np.uint64)
+            grp.create_dataset('overcounts', data=overcounts,dtype=np.uint16)
+            grp['words'].attrs['baseencode'] = params.baseencode
 
             grp.attrs.create('Test', False)
             grp.attrs.create('Train', False)
@@ -281,7 +291,7 @@ def build_XY(params):
     hits = []
     for a in range(params.nangles):
         cum = cmat[a,-1]
-        draws = int(params.drawscale*cum)
+        draws = np.uint16(params.drawscale*cum)
         drawpoints = np.sort(rng.random(draws))
         if cum>0:
             hits.append(list(np.interp(drawpoints,cmat[a,:]/cum,x)))
