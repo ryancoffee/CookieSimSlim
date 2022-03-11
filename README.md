@@ -23,6 +23,7 @@ This may need revisiting... maybe each file update would start a new dataset wit
 	* Xnedges (nangles,)  
 	* Ximg (nangles,128)  
 	* Ypdf (nangles,128)  
+	* words (*developmental*)  
 	* attrs  
 		* sasecenters = [list of sase spike energies]
 		* sasephases = [list of sase spike times(sinogram phases)]
@@ -43,8 +44,17 @@ In order to make the output more managable, there is a script
 ```bash
 /src/collect_images -ifnames <list of .h5 filenames to process into individual Train and Test .h5 files>
 ```
-The output should be two files, using the front ofo the filename from the list and segregating the Train and Test into consistently named seperate files.  
-In each file, there will be a pair of datasets, one for Y and another for X.
+The output should be two files, using the front of the filename from the list and segregating the Train and Test into consistently named seperate files.  
+In each file, there will be a pair of datasets, one for Ytrain,Xtrain and Ytest,Xtest respectively for train and test files.  
+*Please keep in mind, these output files are written into the same directory as the source data, just with the added 'Train.h5' or 'Test.h5' extensions.*  
+What this means in practice is that when running collect\_images.py, one must supply the narrow-ish glob of input filenames, .e.g,
+```bash
+./src/run_simulation.py -ofname ~/data/CookieSimSlim_data/runfew.h5 -n_threads 4 -n_angles 32 -n_energies 128 -n_images 100 -drawscale 0.2
+./src/collect_images.py -ifnames ~/data/CookieSimSlim_data/runfew.[01][0-9].h5
+```
+*Also note in example, using only 32 angles rather than square 128x128 images.*
+
+
 
 ## Reducing dimensionality  
 

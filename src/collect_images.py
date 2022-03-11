@@ -35,12 +35,14 @@ def main():
                     Ytest += [shot['Ypdf'][()]]
         ofnameTrain = '%s/%s.Train.h5'%(m.group(1),m.group(2))
         ofnameTest = '%s/%s.Test.h5'%(m.group(1),m.group(2))
-        with h5py.File(ofnameTrain,'w') as f:
-            f.create_dataset('Xtrain',data=np.stack(Xtrain,axis=-1))
-            f.create_dataset('Ytrain',data=np.stack(Ytrain,axis=-1))
-        with h5py.File(ofnameTest,'w') as f:
-            f.create_dataset('Xtest',data=np.stack(Xtest,axis=-1))
-            f.create_dataset('Ytest',data=np.stack(Ytest,axis=-1))
+        if len(Xtrain)>1:
+            with h5py.File(ofnameTrain,'w') as f:
+                f.create_dataset('Xtrain',data=np.stack(Xtrain,axis=-1),dtype=np.uint8)
+                f.create_dataset('Ytrain',data=np.stack(Ytrain,axis=-1),dtype=np.float16)
+        if len(Xtest)>1:
+            with h5py.File(ofnameTest,'w') as f:
+                f.create_dataset('Xtest',data=np.stack(Xtest,axis=-1),dtype=np.uint8)
+                f.create_dataset('Ytest',data=np.stack(Ytest,axis=-1),dtype=np.float16)
     return
 
 if __name__ == '__main__':

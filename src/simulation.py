@@ -190,7 +190,7 @@ def runprocess(params):
     nimages = params.nimages
     tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha1(bytearray(map(ord, tstring)))
-    with h5py.File('%s/%s.%s.h5'%(params.ofpath,params.ofname,params.tid), 'a') as f:
+    with h5py.File('%s/%s.%02i.h5'%(params.ofpath,params.ofname,params.tid), 'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord, 'shot_%i_' % i))
             keyhash.update(bs)
