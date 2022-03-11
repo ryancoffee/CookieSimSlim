@@ -56,6 +56,20 @@ What this means in practice is that when running collect\_images.py, one must su
 
 
 
+# bitstring representation  
+With the aim of moving toward transformer models like BERT or GPT-2, I have started storing also the bitstring representation of each angle.  
+This is stored in the simulation output .h5 file as the key 'words' with the intention that the 'words' for a sentence and we intend to mask out words (e.g. specific angles) and then pre-train the transformer based on the loss between the actual masked words and the predicted.  
+This function doesn't exist yet, but we are anticipating that we will run with bitstrings that are nenergies bits long for each angle.  
+The nenergies bits are divided into a list of nenergies//64 +1 words such that each word is embedded as a 64 bit integer which is a native type available to h5py.  
+
+In the figure we show a comparison of this decoded and plotted set-bit map along side the corresponding 'Ximg'.  
+![plot](./figs/compare_images.png)
+As one can see, the correspondence is excellent except for the undercounting bins that have more than one electron count in the energy bin for a given angle.  
+We note that this will actually be rare for high-rate operations of hte FEL, and as well we have access to the 'overcounting' attribute for a given shot.  
+The overcounting attribute will be the number of times the encode operation tried to add one to an already set bit.  
+When overcounting is found, experimentally, then one would increase the resolution in energy via more nenergies for the same total energy window.  
+
+
 ## Reducing dimensionality  
 
 To reduce dimensionality, using a 2D dct and taking the variance over all the keys in a single .h5 file.  Then using that variance and cutting it at the 0.01 of max variance in the dct coeffs (see ./src/testDCTresolution.py).  This mask is then used on the individual images which are then back transformed for comparison to both raw (left) and truth (right)
