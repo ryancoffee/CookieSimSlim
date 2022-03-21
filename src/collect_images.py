@@ -14,11 +14,11 @@ def main():
         print('Unrecognized argument(s): \n%s \nProgram exiting ... ... ' % '\n'.join(unparsed))
         exit(0)
 
-    Xtrain = []
-    Ytrain = []
-    Xtest = []
-    Ytest = []
     for fname in args.ifnames:
+        Xtrain = []
+        Ytrain = []
+        Xtest = []
+        Ytest = []
         m = re.search('(^.*)\/(\w+.\d+)\.h5',fname)
         if not m:
             print('failed filename match for ofname = %s'%fname)
