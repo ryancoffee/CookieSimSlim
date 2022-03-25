@@ -42,15 +42,17 @@ This may need revisiting... maybe each file update would start a new dataset wit
 ## Collecting images
 In order to make the output more managable, there is a script 
 ```bash
-/src/collect_images -ifnames <list of .h5 filenames to process into individual Train and Test .h5 files>
+/src/collect_images -mike True -ifnames <list of .h5 filenames to process into individual Train and Test .h5 files>
 ```
-The output should be two files, using the front of the filename from the list and segregating the Train and Test into consistently named seperate files.  
+The output should be two files per input filename, using the front of the filename from the list and segregating the Train and Test into consistently named seperate files.  
 In each file, there will be a pair of datasets, one for Ytrain,Xtrain and Ytest,Xtest respectively for train and test files.  
 *Please keep in mind, these output files are written into the same directory as the source data, just with the added 'Train.h5' or 'Test.h5' extensions.*  
+Mike, this ```-mike True``` makes the output have the shape that you wanted, e.g. (Nimages,nangles,nenergies).  Hopefully this is right for you (e.g. old Naoufal geometry).  
+
 What this means in practice is that when running collect\_images.py, one must supply the narrow-ish glob of input filenames, .e.g,
 ```bash
 ./src/run_simulation.py -ofname ~/data/CookieSimSlim_data/runfew.h5 -n_threads 4 -n_angles 32 -n_energies 128 -n_images 100 -drawscale 0.2
-./src/collect_images.py -ifnames ~/data/CookieSimSlim_data/runfew.[01][0-9].h5
+./src/collect_images.py -mike True -ifnames ~/data/CookieSimSlim_data/runfew.[01][0-9].h5
 ```
 *Also note in example, using only 32 angles rather than square 128x128 images.*
 
