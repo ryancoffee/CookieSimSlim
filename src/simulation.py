@@ -190,6 +190,7 @@ def runprocess(params):
     nimages = params.nimages
     tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha1(bytearray(map(ord, tstring)))
+    # HERE HERE HERE build the string for interpreting the leadning zeros based on the nthreads from run_simulation.
     with h5py.File('%s/%s.%02i.h5'%(params.ofpath,params.ofname,params.tid), 'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord, 'shot_%i_' % i))

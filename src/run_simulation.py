@@ -44,6 +44,10 @@ def main():
         return
     print('%s\t%s'%(m.group(1),m.group(2)))
 
+    '''
+    if int(args.n_threads)>99:
+        HERE HERE HERE HERE figure out how to pass the %n0i where n is num of leading zeros for filenames
+    '''
     if not os.path.exists(m.group(1)):
         os.makedirs(m.group(1))
     paramslist = [Params(m.group(1),m.group(2),args.n_images) for i in range(args.n_threads)]
