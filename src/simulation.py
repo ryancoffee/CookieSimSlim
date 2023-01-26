@@ -85,7 +85,7 @@ def runprocess(params):
             keyhash.update(bs)
             key = keyhash.hexdigest()
             grp = f.create_group(key)
-            X, Y = utils.build_XY(nenergies=params.nenergies,
+            X, Y = utils.build_asymmXY(nenergies=params.nenergies,
                             nangles=params.nangles, drawscale=params.drawscale,
                             darkscale=params.darkscale, secondaryscale=params.secondaryscale)
             grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
