@@ -35,7 +35,7 @@ def main():
     ax.plot(bincenters,h,'.')
     ax.set(xlabel='distribution [x]', ylabel='counts', title='histogram of logistic at r = %.3f'%r)
     #ax.legend('r = %.3f'%r,loc='upper left')
-    plt.savefig('histlogisticchoice_%i_%i_%s.png'%(nsamples,niterations,sys.argv[1]))
+    #plt.savefig('histlogisticchoice_%i_%i_%s.png'%(nsamples,niterations,sys.argv[1]))
     plt.show()
     return
 
