@@ -1,7 +1,9 @@
 # CookieSimSlim  
 ===============  
 Slim simulator for LCLS-SLAC CookieBox detector.  
-Updating for 2023 revivial on S3DF.   
+Updated for 2023 revivial on S3DF.   
+Capturing the concept drift case whereby variation is set to be sinusoidal for central energies and intensities and such across the number of images.  
+
 
 ## The Probability Distribution Function (PDF)  
 
