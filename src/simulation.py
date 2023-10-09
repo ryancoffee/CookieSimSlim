@@ -39,7 +39,7 @@ class Params:
 
     def settid(self,x):
         self.tid = x
-        self.rng = np.random.default_rng(x)
+        self.rng = np.random.default_rng(seed=x)
         return self
 
     def gettid(self):
@@ -191,7 +191,7 @@ def runprocess(params):
     tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha1(bytearray(map(ord, tstring)))
     # HERE HERE HERE build the string for interpreting the leadning zeros based on the nthreads from run_simulation.
-    with h5py.File('%s/%s.%02i.h5'%(params.ofpath,params.ofname,params.tid), 'a') as f:
+    with h5py.File('%s/%s.%03i.h5'%(params.ofpath,params.ofname,params.tid), 'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord, 'shot_%i_' % i))
             keyhash.update(bs)
@@ -251,19 +251,6 @@ def runprocess(params):
                 grp.attrs['Test'] = True
             else:
                 grp.attrs['Train'] = True
-
-        '''
-        output file struct
-        main--image --Xhits,Xaddresses,Xnedges
-                    --Ypdf
-                    --Ximg
-                    --attrs --nangles (the number of angles measured)
-                            --nenergies (the number of energy bins)
-                            --drawscale (the x-ray intensity scale factor for draws from the CDF-cumulative distribution function)
-                            --test/train
-            --image
-            --image
-        '''
 
     return
 
