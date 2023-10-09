@@ -51,10 +51,12 @@ def main():
     for i,p in enumerate(paramslist):
         p.settid(i+args.offset_threads).setstreaking()
         p.setnenergies(args.n_energies).setnangles(args.n_angles).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
-        p.setdrawscale(args.drawscale + int(args.drawscalevar*math.cos(float(i)*2.0*math.pi/float(sz))))
-        p.setsasescale(args.sasescale + int(args.sasescalevar*math.cos(math.pi/4. + float(i)*2.0*math.pi/float(sz)) ))
-        p.setcentralenergy(args.centralenergy + args.centralenergyvar*math.sin(float(i)*2.0*math.pi/float(sz)))
-        p.setkickstrength(args.kickstrength + args.kickstrengthvar*math.sin(-math.pi/4. + float(i)*2.0*math.pi/float(sz)))
+        p.setdrawscale(args.drawscale) # + int(args.drawscalevar*math.cos(float(i)*2.0*math.pi/float(sz))))
+        p.setsasescale(args.sasescale) # + int(args.sasescalevar*math.cos(math.pi/4. + float(i)*2.0*math.pi/float(sz)) ))
+        p.setcentralenergy(args.centralenergy)
+        #p.setcentralenergyvar(args.centralenergyvar) #*math.sin(float(i)*2.0*math.pi/float(sz)))
+        p.setkickstrength(args.kickstrength)
+        p.setkickstrengthvar(args.kickstrengthvar) #*math.sin(-math.pi/4. + float(i)*2.0*math.pi/float(sz)))
         p.setcentralenergywidth(args.centralenergywidth)
 
     with mp.Pool(processes=len(paramslist)) as pool:

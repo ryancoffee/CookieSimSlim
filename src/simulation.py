@@ -29,6 +29,7 @@ class Params:
         self.centralenergy = 64 
         self.centralenergywidth = 10
         self.kickstrength = 30.
+        self.kickstrengthvar = 10.
         self.polstrengths = [1.]
         self.poldirections = [0.]
         self.streaking = True
@@ -87,6 +88,10 @@ class Params:
 
     def setkickstrength(self,x):
         self.kickstrength = np.float16(x)
+        return self
+
+    def setkickstrengthvar(self,x):
+        self.kickstrengthvar = np.float16(x)
         return self
 
     def setdarkscale(self, r):  # this is the level of dark counts (this doesn't scale with intensity)
@@ -257,6 +262,7 @@ def runprocess(params):
 def build_XY(params):
     rng = params.rng
     x = np.arange(params.nenergies,dtype=float)
+    kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     params.setphases( list(rng.random(ncenters)*2.*np.pi) )
@@ -269,11 +275,13 @@ def build_XY(params):
         bgmat += float(params.secondaryscale)*np.sum(params.saseamps)/float(len(params.saseamps)) #* np.ones((params.nangles,x.shape[0]),dtype=float)
     for i,c in enumerate(params.sasecenters):
         for a in range(params.nangles):
-            kick = 0.
-            if params.streaking:
-                kick = params.kickstrength*np.cos(a*2.*np.pi/params.nangles + params.sasephases[i])
             pol = 0.5*(1. + params.polstrengths[i]*np.cos(a*4.*np.pi/params.nangles + params.poldirections[i]) )
-            ymat[a,:] += params.saseamps[i]* pol * utils.cossq( x , params.sasewidth , c + kick ) # this produces the 2D PDF
+            if params.streaking:
+                kick = kickstrength*np.cos(a*2.*np.pi/params.nangles + params.sasephases[i])
+                ymat[a,:] += params.saseamps[i]* pol * utils.cossq( x , params.sasewidth , c + kick ) # this produces the 2D PDF
+            else:
+                ymat[a,:] += params.saseamps[i]* pol * utils.cossq( x , params.sasewidth , c) # this produces the 2D PDF
+
     cmat = np.cumsum(ymat + bgmat,axis=1)
     # the number of draws for each angle should be proportional to the total sum of that angle
     hits = []

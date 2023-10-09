@@ -11,7 +11,7 @@ which in principle should be run as a script (now moving this to ```./test_run.b
 opath=/sdf/scratch/${USER}/CookieSimSlim_data  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/run_simulation.py -ofname ${outfile} -n_threads 2 -n_images 20 -n_angles 32 -n_energies 512 -polstrength 1 -polstrengthvar 1 -centralenergy 256 -centralenergyvar 128 -kickstrength 128 -kickstrengthvar 64 -drawscale 1
+./src/run_simulation.py -ofname ${outfile} -n_threads 16 -n_images 100 -n_angles 128 -n_energies 512 -polstrength 1 -polstrengthvar 1 -centralenergy 256 -centralenergyvar 128 -kickstrength 128 -kickstrengthvar 64 -drawscale 8
 ```  
 
 ## HDF5 file structure  
@@ -29,7 +29,7 @@ This may need revisiting... maybe each file update would start a new dataset wit
 		* sasephases = [list of sase spike times(sinogram phases)]
 		* saseamps = [list of sase spike amplitudes]
 		* nangles = 128   
-		* nenergies = 128  
+		* nenergies = 512  
 		* drawscale = 8 
 		* darkscale = 0.001
 		* secondaryscale = 0.01
