@@ -2,6 +2,7 @@
 ===============  
 Slim simulator for LCLS-SLAC CookieBox detector.  
 Updating for 2023 revivial on S3DF.   
+*This is Razib's actual README.md file.*  
 
 ## The Probability Distribution Function (PDF)  
 
