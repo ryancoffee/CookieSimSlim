@@ -1,4 +1,4 @@
-# CookieSimSlim  
+# CookieSimSlim -Abby Br  
 ===============  
 Slim simulator for LCLS-SLAC CookieBox detector.  
 Updating for 2023 revivial on S3DF.   
