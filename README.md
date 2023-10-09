@@ -2,17 +2,16 @@
 ===============  
 Slim simulator for LCLS-SLAC CookieBox detector.  
 Updating for 2023 revivial on S3DF.   
-I am changing this now to accommodate eventually also the spectroscopy version as well as the streaking version.  For now, still concentrating on streaking though.  
 
 ## The Probability Distribution Function (PDF)  
 
-An example of running this for a simple test on two threads with 128 angle channels and 10 images each thread is as follows,
-which in principle should be run as a script:  
+An example of running this for a simple test on two threads with 128 angle channels and 10 images each thread is as follows,  
+which in principle should be run as a script (now moving this to ```./test_run.bash```):    
 ```bash  
-opath=~/data/h5files  
+opath=/sdf/scratch/${USER}/CookieSimSlim_data  
 mkdir -p ${opath}  
 outfile=${opath}/test.h5  
-./src/run_simulation.py -ofname /media/coffee/9C33-6BBD/CookieSimSlim_data/lowsig.h5 -n_threads 2 -n_images 20 -n_angles 16 -n_energies 128 -polstrength 1 -polstrengthvar 1 -centralenergy 64 -centralenergyvar 40 -kickstrengthvar 10 -drawscale 1
+./src/run_simulation.py -ofname ${outfile} -n_threads 2 -n_images 20 -n_angles 32 -n_energies 512 -polstrength 1 -polstrengthvar 1 -centralenergy 256 -centralenergyvar 128 -kickstrength 128 -kickstrengthvar 64 -drawscale 1
 ```  
 
 ## HDF5 file structure  
@@ -40,6 +39,7 @@ This may need revisiting... maybe each file update would start a new dataset wit
 * image  
 
 
+# ONLY FOR GRAPHCORE
 ## Collecting images
 In order to make the output more managable, there is a script 
 ```bash
