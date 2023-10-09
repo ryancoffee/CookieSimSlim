@@ -1,7 +1,8 @@
-
 # CookieSimSlim  
 ===============  
-Slim simulator for LCLS-SLAC CookieBox detector.  I am changing this now to accommodate eventually also the spectroscopy version as well as the streaking version.  For now, still concentrating on streaking though.  
+Slim simulator for LCLS-SLAC CookieBox detector.  
+Updating for 2023 revivial on S3DF.   
+I am changing this now to accommodate eventually also the spectroscopy version as well as the streaking version.  For now, still concentrating on streaking though.  
 
 ## The Probability Distribution Function (PDF)  
 
