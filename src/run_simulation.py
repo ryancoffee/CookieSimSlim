@@ -48,7 +48,9 @@ def main():
         os.makedirs(m.group(1))
     paramslist = [Params(m.group(1),m.group(2),args.n_images) for i in range(args.n_threads)]
     sz = len(paramslist)
+    print('sz = %i'%sz)
     for i,p in enumerate(paramslist):
+        print('i = %i'%i)
         p.settid(i+args.offset_threads).setstreaking()
         p.setnenergies(args.n_energies).setnangles(args.n_angles).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
         p.setdrawscale(args.drawscale) # + int(args.drawscalevar*math.cos(float(i)*2.0*math.pi/float(sz))))
