@@ -4,6 +4,7 @@ Slim simulator for LCLS-SLAC CookieBox detector.
 Updating for 2023 revivial on S3DF.   
 
 ## The Probability Distribution Function (PDF)  
+Possibly need to source the conda environment via something like.
 
 An example of running this for a simple test on two threads with 128 angle channels and 10 images each thread is as follows,  
 which in principle should be run as a script (now moving this to ```./test_run.bash```):    
