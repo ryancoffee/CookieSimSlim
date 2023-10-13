@@ -260,6 +260,9 @@ def runprocess(params):
     return
 
 def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
+    #check if there are any sasecenters, if not, then return empty list
+    if params.sasecenters == []:
+        return []
     rng = params.rng
     valid = False
     phase_list = list(rng.random(ncenters)*2.*np.pi)
