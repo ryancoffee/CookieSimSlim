@@ -115,7 +115,7 @@ class Params:
         return self
 
     def setsasewidth(self,x):
-        self.sasesidth = x
+        self.sasewidth = x
         return self
 
     def setcenters(self,x):
@@ -169,7 +169,7 @@ class Params:
         return self.sasescale
 
     def getsasewidth(self):
-        return self.sasesidth
+        return self.saseswidth
 
     def getcenters(self):
         return self.sasecenters
@@ -295,16 +295,16 @@ def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
         fully_valid = True
         reset_phases = False
         print("testing")
-        print(params.centralenergy)
-        for i in range(params.centralenergy):
+        print(params.sasecenters)
+        for i in range(params.sasecenters):
             
-            energy = params.centralenergy[i]
-            energy_width = params.centralenergywidth[i]
+            energy = params.sasecenters[i]
+            energy_width = params.sasewidths[i]
             phase = phase_list[i]
-            for j in range(params.centralenergy):
+            for j in range(params.sasecenters):
                 if i!=j:
-                    energy2 = params.centralenergy[j]
-                    energy_width2 = params.centralenergywidth[j]
+                    energy2 = params.sasecenters[j]
+                    energy_width2 = params.sasewidths[j]
                     phase2 = phase_list[j]
                     if np.abs(energy-energy2)<(energy_width+energy_width2):
                         if np.abs(phase-phase2)<phase_difference_threshold:
@@ -337,9 +337,10 @@ def build_XY(params):
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
+    print(params.sasecenters)
     valid_phase_list = get_valid_phase_list(params,ncenters)
     params.setphases(valid_phase_list)
-    params.setphases( list(rng.random(ncenters)*2.*np.pi) )
+    #params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
     params.setpolstrengths(list(rng.random(ncenters)))
     params.setpoldirections(list(rng.random(ncenters)*np.pi))
