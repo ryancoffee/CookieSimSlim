@@ -301,12 +301,12 @@ def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
         reset_phases = False
         print("testing")
         print(params.sasecenters)
-        for i in range(params.sasecenters):
+        for i in range(len(params.sasecenters)):
             
             energy = params.sasecenters[i]
             energy_width = params.sasewidths[i]
             phase = phase_list[i]
-            for j in range(params.sasecenters):
+            for j in range(len(params.sasecenters)):
                 if i!=j:
                     energy2 = params.sasecenters[j]
                     energy_width2 = params.sasewidths[j]
