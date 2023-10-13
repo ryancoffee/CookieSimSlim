@@ -259,12 +259,83 @@ def runprocess(params):
 
     return
 
+def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
+    rng = params.rng
+    valid = False
+    phase_list = list(rng.random(ncenters)*2.*np.pi)
+    # # this seems good but then realized that changing one phase could then make another phase invalid so either need to loop again or just keep randomly selecting new phase list until valid
+    # actually randomly selecting new phase list until valid is not good because then this means if any energies are close, then enforces all phase differences  (not representative data anymore)
+    # for i in range(params.centralenergy):
+    #     energy = params.centralenergy[i]
+    #     energy_width = params.centralenergywidth[i]
+    #     phase = phase_list[i]
+    #     for j in range(params.centralenergy):
+    #         if i!=j:
+    #             energy2 = params.centralenergy[j]
+    #             energy_width2 = params.centralenergywidth[j]
+    #             phase2 = phase_list[j]
+    #             if np.abs(energy-energy2)<(energy_width+energy_width2):
+    #                 if np.abs(phase-phase2)<phase_difference_threshold:
+    #                     valid = False
+    #                     while not valid:
+    #                         new_phase = (rng.random(1)*2.*np.pi)
+    #                         if np.abs(new_phase-phase2)>phase_difference_threshold:
+    #                             phase_list[i] = new_phase
+    #                             valid = True
+    #                         else:
+    #                             valid = False
+    #                 else:
+    #                     phase_list = phase_list
+    #             else:
+    #                 phase_list = phase_list
+
+    # actually need to wrap all in another while loop that runs through again until actually valid
+    fully_valid = False
+    while not fully_valid:
+        fully_valid = True
+        reset_phases = False
+        for i in range(params.centralenergy):
+            energy = params.centralenergy[i]
+            energy_width = params.centralenergywidth[i]
+            phase = phase_list[i]
+            for j in range(params.centralenergy):
+                if i!=j:
+                    energy2 = params.centralenergy[j]
+                    energy_width2 = params.centralenergywidth[j]
+                    phase2 = phase_list[j]
+                    if np.abs(energy-energy2)<(energy_width+energy_width2):
+                        if np.abs(phase-phase2)<phase_difference_threshold:
+                            fully_valid = False
+                            valid = False
+                            while not valid:
+                                new_phase = (rng.random(1)*2.*np.pi)
+                                if np.abs(new_phase-phase2)>phase_difference_threshold:
+                                    phase_list[i] = new_phase
+                                    valid = True
+                                    reset_phases = True
+                                else:
+                                    valid = False
+                if reset_phases:
+                    break
+            if reset_phases:
+                break
+            #break statements get back to top of while loop so that can recheck all phases now that one has been changed
+
+    return phase_list
+                    
+
+
+
+    return phase_list
+
 def build_XY(params):
     rng = params.rng
     x = np.arange(params.nenergies,dtype=float)
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
+    valid_phase_list = get_valid_phase_list(params,ncenters)
+    params.setphases(valid_phase_list)
     params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
     params.setpolstrengths(list(rng.random(ncenters)))
