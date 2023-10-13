@@ -294,9 +294,10 @@ def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
     while not fully_valid:
         fully_valid = True
         reset_phases = False
+        print("testing")
+        print(params.centralenergy)
         for i in range(params.centralenergy):
-            print("testing")
-            print(params.centralenergy)
+            
             energy = params.centralenergy[i]
             energy_width = params.centralenergywidth[i]
             phase = phase_list[i]
