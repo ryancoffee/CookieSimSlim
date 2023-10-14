@@ -228,6 +228,8 @@ def runprocess(params):
             grp.attrs.create('sasewidth', params.sasewidth,dtype=np.float16)
             grp.attrs.create('sasescale', params.sasescale,dtype=np.uint8)
             grp.attrs.create('sasecenters', params.sasecenters,dtype=np.float16)
+            print("hereer")
+            print(params.sasephases)
             grp.attrs.create('sasephases', params.sasephases,dtype=np.float16)
             grp.attrs.create('saseamps', params.saseamps,dtype=np.float16)
             grp.attrs.create('poldirections', params.poldirections,dtype=np.float16)
