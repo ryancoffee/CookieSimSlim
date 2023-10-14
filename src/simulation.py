@@ -304,12 +304,12 @@ def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
         for i in range(len(params.sasecenters)):
             
             energy = params.sasecenters[i]
-            energy_width = params.sasewidths[i]
+            energy_width = params.sasewidth[i]
             phase = phase_list[i]
             for j in range(len(params.sasecenters)):
                 if i!=j:
                     energy2 = params.sasecenters[j]
-                    energy_width2 = params.sasewidths[j]
+                    energy_width2 = params.sasewidth[j]
                     phase2 = phase_list[j]
                     if np.abs(energy-energy2)<(energy_width+energy_width2):
                         if np.abs(phase-phase2)<phase_difference_threshold:
