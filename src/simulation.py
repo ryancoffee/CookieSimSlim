@@ -343,6 +343,7 @@ def build_XY(params):
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     valid_phase_list = get_valid_phase_list(params,ncenters, energy_sase_width = 0.5)
+    print(valid_phase_list)
     params.setphases(valid_phase_list)
     #params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
