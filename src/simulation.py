@@ -261,7 +261,7 @@ def runprocess(params):
 
 def get_valid_phase_list(params,ncenters,energy_sase_width=None,phase_difference_threshold = np.pi/8.):
     #check if there are any sasecenters, if not, then return empty list
-    if (energy_width is None):
+    if (energy_sase_width is None):
         if params.sasewidth is None:
             print("no sasewidth")
     if params.sasecenters == []:
