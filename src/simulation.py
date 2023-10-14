@@ -203,6 +203,8 @@ def runprocess(params):
             key = keyhash.hexdigest()
             grp = f.create_group(key)
             X, Y = build_XY(params)
+            print("hereer")
+            print(params.sasephases)
             grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
             hitsvec = []
             nedges = []
