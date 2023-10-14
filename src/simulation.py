@@ -296,7 +296,8 @@ def get_valid_phase_list(params,ncenters,energy_sase_width=None,phase_difference
                             fully_valid = False
                             valid = False
                             while not valid:
-                                new_phase = (rng.random(1)*2.*np.pi)
+                                new_phase = list(rng.random(1)*2.*np.pi)
+                                new_phase = new_phase[0]
                                 if np.abs(new_phase-phase2)>phase_difference_threshold:
                                     phase_list[i] = new_phase
                                     valid = True
