@@ -259,9 +259,11 @@ def runprocess(params):
 
     return
 
-def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
+def get_valid_phase_list(params,ncenters,energy_sase_width=None,phase_difference_threshold = np.pi/8.):
     #check if there are any sasecenters, if not, then return empty list
-    print(ncenters)
+    if (energy_width is None):
+        if params.sasewidth is None:
+            print("no sasewidth")
     if params.sasecenters == []:
         print("no sasecenters")
         return []
@@ -299,17 +301,15 @@ def get_valid_phase_list(params,ncenters,phase_difference_threshold = np.pi/8.):
     while not fully_valid:
         fully_valid = True
         reset_phases = False
-        print("testing")
-        print(params.sasecenters)
         for i in range(len(params.sasecenters)):
             
             energy = params.sasecenters[i]
-            energy_width = params.sasewidth[i]
+            energy_width = energy_sase_width
             phase = phase_list[i]
             for j in range(len(params.sasecenters)):
                 if i!=j:
                     energy2 = params.sasecenters[j]
-                    energy_width2 = params.sasewidth[j]
+                    energy_width2 = energy_sase_width
                     phase2 = phase_list[j]
                     if np.abs(energy-energy2)<(energy_width+energy_width2):
                         if np.abs(phase-phase2)<phase_difference_threshold:
@@ -342,7 +342,7 @@ def build_XY(params):
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
-    valid_phase_list = get_valid_phase_list(params,ncenters)
+    valid_phase_list = get_valid_phase_list(params,ncenters, energy_sase_width = 0.5)
     params.setphases(valid_phase_list)
     #params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
