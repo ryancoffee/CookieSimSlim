@@ -265,7 +265,6 @@ def get_valid_phase_list(params,ncenters,energy_sase_width=None,phase_difference
         if params.sasewidth is None:
             print("no sasewidth")
     if params.sasecenters == []:
-        print("no sasecenters")
         return []
     rng = params.rng
     valid = False
@@ -308,11 +307,6 @@ def get_valid_phase_list(params,ncenters,energy_sase_width=None,phase_difference
 
     return phase_list
                     
-
-
-
-    return phase_list
-
 def build_XY(params):
     rng = params.rng
     x = np.arange(params.nenergies,dtype=float)
