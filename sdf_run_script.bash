@@ -4,7 +4,7 @@
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=16
 #SBATCH --mem-per-cpu=10g
 #SBATCH --time=0-20:00:00
 #SBATCH --gpus geforce_rtx_2080_ti:0
