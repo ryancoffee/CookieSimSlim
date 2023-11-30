@@ -32,6 +32,7 @@ parser.add_argument('-kickstrengthvar', type=float,default=5,required=False, hel
 parser.add_argument('-polstrength', type=float,default=0,required=False, help='anisotropy is 1 + polstrength*cos(2*theta))')
 parser.add_argument('-polstrengthvar', type=float,default=0,required=False, help='variation of anisotropy')
 parser.add_argument('-testsplit', type=float,default=0.1,required=False, help='test images as percent of total')
+parser.add_argument('-custom_evenly_distributed_sase', type=bool,default=False,required=False, help='custom evenly distributed sase')
 
 def main():
     args, unparsed = parser.parse_known_args()
@@ -60,6 +61,7 @@ def main():
         p.setkickstrength(args.kickstrength)
         p.setkickstrengthvar(args.kickstrengthvar) #*math.sin(-math.pi/4. + float(i)*2.0*math.pi/float(sz)))
         p.setcentralenergywidth(args.centralenergywidth)
+        p.set_custom_evenly_distributed_sase(args.custom_evenly_distributed_sase)
 
     with mp.Pool(processes=len(paramslist)) as pool:
         pool.map(runprocess,paramslist)

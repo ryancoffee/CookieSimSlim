@@ -13,7 +13,7 @@
             "justMyCode": true,
             "args": [
                 "-ofname",
-                "/Users/jhirschm/Documents/MRCO/Output",
+                "/Users/jhirschm/Documents/MRCO/Output/test1.h5",
                 "-n_threads",
                 "1",
                 "-n_images",
@@ -36,6 +36,8 @@
                 "32",
                 "-drawscale",
                 "4",
+                "-custom_evenly_distributed_sase",
+                "true"
             ]
         }
     ]

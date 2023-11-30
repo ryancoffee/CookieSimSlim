@@ -7,6 +7,7 @@ import re
 import os
 import utils
 import binEncodings as be
+import random
 
 
 class Params:
@@ -37,6 +38,7 @@ class Params:
         self.tid = 0
         self.threadoffset = 0
         self.rng = np.random.default_rng()
+        self.custom_evenly_distributed_sase = False
 
     def settid(self,x):
         self.tid = x
@@ -137,6 +139,10 @@ class Params:
     def setpolstrengths(self,x): # this is the strength of the polarization anisotropy, i.e. 0 for pure circular and 1 for pure linear
         self.polstrengths = x
         return self
+    
+    def set_custom_evenly_distributed_sase(self,x):
+        self.custom_evenly_distributed_sase = x
+        return self
 
     def getsecondaryscale(self):
         return self.secondaryscale
@@ -189,6 +195,12 @@ class Params:
     def getpolstrengths(self):
         return self.polstrengths
 
+
+def custom_evenly_distributed_sase(n=3, max_num_sase=10):
+    random_int = random.randint(0,n) #inclusive
+    if random_int == n:
+        random_int = random.randint(n,max_num_sase)
+    return random_int
 
 
 def runprocess(params):
@@ -311,7 +323,10 @@ def build_XY(params):
     rng = params.rng
     x = np.arange(params.nenergies,dtype=float)
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
-    ncenters = rng.poisson(params.sasescale)
+    if params.custom_evenly_distributed_sase:
+        ncenters = custom_evenly_distributed_sase(n=3, max_num_sase=10) #defulats to 0,1,2,3+
+    else:
+        ncenters = rng.poisson(params.sasescale) #default to poisson
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     valid_phase_list = get_valid_phase_list(params,ncenters, energy_sase_width = 0.5)
     params.setphases(valid_phase_list)
