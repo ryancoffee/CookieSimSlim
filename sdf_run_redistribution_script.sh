@@ -12,6 +12,6 @@ source ~/.bashrc
 conda activate pytorch-gpu
 export SLURM_EXACT=1
 echo starting run 1 at: `date`
-python3 ./src/run_redistribution.py
+python3 ./src/data_redistribution.py
 # Print the date again -- when finished
 echo Finished at: `date`
