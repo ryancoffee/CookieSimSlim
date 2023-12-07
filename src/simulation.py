@@ -39,6 +39,8 @@ class Params:
         self.threadoffset = 0
         self.rng = np.random.default_rng()
         self.custom_evenly_distributed_sase = False
+        self.nclasses = 4
+        self.max_num_sase = 10
 
     def settid(self,x):
         self.tid = x
@@ -142,6 +144,14 @@ class Params:
     
     def set_custom_evenly_distributed_sase(self,x):
         self.custom_evenly_distributed_sase = x
+        return self
+    
+    def set_nclasses(self,x):
+        self.nclasses = x
+        return self
+    
+    def set_max_num_sase(self,x):
+        self.max_num_sase = x
         return self
 
     def getsecondaryscale(self):
@@ -324,7 +334,7 @@ def build_XY(params):
     x = np.arange(params.nenergies,dtype=float)
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     if params.custom_evenly_distributed_sase:
-        ncenters = custom_evenly_distributed_sase(n=3, max_num_sase=10) #defulats to 0,1,2,3+
+        ncenters = custom_evenly_distributed_sase(n=params.nclasses-1, max_num_sase=params.max_num_sase) #defulats to 0,1,2,3+
     else:
         ncenters = rng.poisson(params.sasescale) #default to poisson
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )

@@ -33,6 +33,8 @@ parser.add_argument('-polstrength', type=float,default=0,required=False, help='a
 parser.add_argument('-polstrengthvar', type=float,default=0,required=False, help='variation of anisotropy')
 parser.add_argument('-testsplit', type=float,default=0.1,required=False, help='test images as percent of total')
 parser.add_argument('-custom_evenly_distributed_sase', type=bool,default=False,required=False, help='custom evenly distributed sase')
+parser.add_argument('-nclasses', type=int,default=4,required=False, help='number of pulse classes')
+parser.add_argument('-max_num_sase', type=int,default=10,required=False, help='max number of sase subspikes')
 
 def main():
     args, unparsed = parser.parse_known_args()
@@ -62,6 +64,8 @@ def main():
         p.setkickstrengthvar(args.kickstrengthvar) #*math.sin(-math.pi/4. + float(i)*2.0*math.pi/float(sz)))
         p.setcentralenergywidth(args.centralenergywidth)
         p.set_custom_evenly_distributed_sase(args.custom_evenly_distributed_sase)
+        p.set_nclasses(args.nclasses)
+        p.set_max_num_sase(args.max_num_sase)
 
     with mp.Pool(processes=len(paramslist)) as pool:
         pool.map(runprocess,paramslist)
