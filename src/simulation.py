@@ -340,7 +340,7 @@ def build_XY(params):
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     valid_phase_list = get_valid_phase_list(params,ncenters, energy_sase_width = 0.5)
     params.setphases(valid_phase_list)
-    params.setsasewidth(10) #temporarily hardcode this to 10 for plotting visibility.
+    # params.setsasewidth(10) #temporarily hardcode this to 10 for plotting visibility.
     #params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
     params.setpolstrengths(list(rng.random(ncenters)))
