@@ -39,6 +39,8 @@ class Params:
         self.threadoffset = 0
         self.rng = np.random.default_rng()
         self.custom_evenly_distributed_sase = False
+        self.custom_single_energy_sase = False
+        self.selected_centers = 0
         self.nclasses = 4
         self.max_num_sase = 10
 
@@ -146,6 +148,14 @@ class Params:
         self.custom_evenly_distributed_sase = x
         return self
     
+    def set_custom_single_energy_sase(self,x):
+        self.custom_single_energy_sase = x
+        return self
+    
+    def set_selected_centers(self,x):
+        self.selected_centers = x
+        return self
+    
     def set_nclasses(self,x):
         self.nclasses = x
         return self
@@ -212,6 +222,8 @@ def custom_evenly_distributed_sase(n=3, max_num_sase=10):
         random_int = random.randint(n,max_num_sase)
     return random_int
 
+def custom_single_energy_sase(n=2):
+    return n
 
 def runprocess(params):
     nimages = params.nimages
@@ -335,6 +347,8 @@ def build_XY(params):
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     if params.custom_evenly_distributed_sase:
         ncenters = custom_evenly_distributed_sase(n=params.nclasses-1, max_num_sase=params.max_num_sase) #defulats to 0,1,2,3+
+    elif params.custom_single_energy_sase:
+        ncenters = custom_single_energy_sase(n=params.selected_centers)
     else:
         ncenters = rng.poisson(params.sasescale) #default to poisson
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )

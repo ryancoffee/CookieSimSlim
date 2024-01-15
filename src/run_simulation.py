@@ -33,6 +33,8 @@ parser.add_argument('-polstrength', type=float,default=0,required=False, help='a
 parser.add_argument('-polstrengthvar', type=float,default=0,required=False, help='variation of anisotropy')
 parser.add_argument('-testsplit', type=float,default=0.1,required=False, help='test images as percent of total')
 parser.add_argument('-custom_evenly_distributed_sase', type=bool,default=False,required=False, help='custom evenly distributed sase')
+parser.add_argument('-custom_single_energy_sase', type=bool,default=False,required=False, help='custom single energy sase')
+parser.add_argument('-selected_centers', type=int,default=2,required=False, help='selected centers for custom single energy sase')
 parser.add_argument('-nclasses', type=int,default=4,required=False, help='number of pulse classes')
 parser.add_argument('-max_num_sase', type=int,default=10,required=False, help='max number of sase subspikes')
 
@@ -64,6 +66,8 @@ def main():
         p.setkickstrengthvar(args.kickstrengthvar) #*math.sin(-math.pi/4. + float(i)*2.0*math.pi/float(sz)))
         p.setcentralenergywidth(args.centralenergywidth)
         p.set_custom_evenly_distributed_sase(args.custom_evenly_distributed_sase)
+        p.set_custom_single_energy_sase(args.custom_single_energy_sase)
+        p.set_selected_centers(args.selected_centers)
         p.set_nclasses(args.nclasses)
         p.set_max_num_sase(args.max_num_sase)
 
