@@ -7,11 +7,13 @@ import re
 import os
 import utils
 import binEncodings as be
+import platform
 
 
 class Params:
     def __init__(self, path, name, n):
         self.baseencode = be.storebase
+        self.nodeid = int(hashlib.sha256(platform.node().encode('utf-8')).hexdigest(),16)%(1<<16)
         self.ofpath = path
         self.ofname = name
         self.nimages = n
@@ -37,6 +39,11 @@ class Params:
         self.tid = 0
         self.threadoffset = 0
         self.rng = np.random.default_rng()
+
+    def settidIPrng(self,x):
+        self.tid = x
+        self.rng = np.random.default_rng(seed=x+self.nodeid)
+        return self
 
     def settid(self,x):
         self.tid = x
@@ -196,7 +203,7 @@ def runprocess(params):
     tstring = '%.9f' % (time.clock_gettime(time.CLOCK_REALTIME))
     keyhash = hashlib.sha1(bytearray(map(ord, tstring)))
     # HERE HERE HERE build the string for interpreting the leadning zeros based on the nthreads from run_simulation.
-    with h5py.File('%s/%s.%03i.h5'%(params.ofpath,params.ofname,params.tid), 'a') as f:
+    with h5py.File('%s/%s.%s.%03i.h5'%(params.ofpath,params.ofname,platform.node(),params.tid), 'a') as f:
         for i in range(nimages):
             bs = bytearray(map(ord, 'shot_%i_' % i))
             keyhash.update(bs)

@@ -51,7 +51,7 @@ def main():
     print('sz = %i'%sz)
     for i,p in enumerate(paramslist):
         print('i = %i'%i)
-        p.settid(i+args.offset_threads).setstreaking()
+        p.settidIPrng(i+args.offset_threads).setstreaking()
         p.setnenergies(args.n_energies).setnangles(args.n_angles).settestsplit(args.testsplit).setdarkscale(args.darkscale).setsecondaryscale(args.secondaryscale)
         p.setdrawscale(args.drawscale) # + int(args.drawscalevar*math.cos(float(i)*2.0*math.pi/float(sz))))
         p.setsasescale(args.sasescale) # + int(args.sasescalevar*math.cos(math.pi/4. + float(i)*2.0*math.pi/float(sz)) ))
