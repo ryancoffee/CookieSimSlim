@@ -3,6 +3,14 @@
 Slim simulator for LCLS-SLAC CookieBox detector.  
 Updating for 2023 revivial on S3DF.   
 
+# Parallelism
+Now I'm using mpi at home.  Usage is something like this... from directory /mnt/islands where I've moved the code as well, and using hard paths.  \
+```bash
+mpirun --host baratza:1,timor:1,papua:1 /mnt/islands/CookieSimSlim/src/run_simulation.py -ofname /mnt/islands/CookieSimSlim_data/css.h5 -n_threads 8 -n_angles 128 -n_energies 128 -n_images 1024 -offset_threads 16
+```  
+The reason for using only one slot for the simulation is that it is itself parallel inside the node, and each thread that gets spun up by run\_sim will get its own filename and these collide if mpirun runs multiple jobs on a single node.  
+Just a weird quirk of the way I parallelized first across single node and now am also playing with mpirun.  
+
 ## The Probability Distribution Function (PDF)  
 Possibly need to source the conda environment via something like.
 
