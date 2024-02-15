@@ -24,12 +24,12 @@ class Params:
         self.secondaryscale = 0.002
         self.testsplit = 0.1
         self.sasescale = 3
-        self.sasewidth = 3.0
+        self.sasewidth = 10.0
         self.sasecenters = []
         self.sasephases = []
         self.saseamps = []
         self.centralenergy = 64 
-        self.centralenergywidth = 10
+        self.centralenergywidth = 32
         self.kickstrength = 30.
         self.kickstrengthvar = 10.
         self.polstrengths = [1.]
@@ -239,7 +239,7 @@ def runprocess(params):
             grp.attrs.create('saseamps', params.saseamps,dtype=np.float16)
             grp.attrs.create('poldirections', params.poldirections,dtype=np.float16)
             grp.attrs.create('polstrengths', params.polstrengths,dtype=np.float16)
-            grp.attrs.create('kickstregth', params.kickstrength,dtype=np.float16)
+            grp.attrs.create('kickstrength', params.kickstrength,dtype=np.float16)
 
             img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
             words = []
