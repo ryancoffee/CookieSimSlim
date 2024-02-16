@@ -31,7 +31,7 @@ class Params:
         self.centralenergy = 64 
         self.centralenergywidth = 32
         self.kickstrength = 30.
-        self.kickstrengthvar = 10.
+        self.kickstrengthvar = 0.
         self.polstrengths = [1.]
         self.poldirections = [0.]
         self.streaking = True
@@ -274,8 +274,8 @@ def build_XY(params):
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
-    params.setpolstrengths(list(rng.random(ncenters)))
-    params.setpoldirections(list(rng.random(ncenters)*np.pi))
+    params.setpolstrengths([0.0]*ncenters)#list(rng.random(ncenters)))
+    params.setpoldirections([0.0]*ncenters)#list(rng.random(ncenters)*np.pi))
     bgmat = params.darkscale * np.ones((params.nangles,x.shape[0]),dtype=float)
     ymat = np.zeros((params.nangles,x.shape[0]),dtype=float)
     if ncenters>0:

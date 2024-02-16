@@ -18,7 +18,7 @@ def main(fname):
             XFT = np.fft.fft2(X)
             kern = np.zeros(XFT.shape,float)
             for r in range(kern.shape[1]):
-                w = f[k].attrs['sasewidth']*.1
+                w = f[k].attrs['sasewidth']
                 c = float(kern.shape[0]>>1) + f[k].attrs['kickstrength'] * np.sin(r*2*np.pi/float(kern.shape[1]))
                 kern[r,:] = gauss(np.arange(kern.shape[0]),w,c)
             norm = np.sqrt(np.inner(kern.flatten(),kern.flatten()))
@@ -33,7 +33,9 @@ def main(fname):
             remove = np.roll(np.roll(kern,inds[0]-kern.shape[0],axis=0),inds[1]-kern.shape[1],axis=1)
             #remove /=norm
             #plt.imshow(X+1e2*remove)
-            plt.imshow(X-np.inner(X,remove)*remove)
+            nextim = X-.15*np.inner(X,remove)*remove
+            nextim *= (nextim>0)
+            plt.imshow(nextim)
             plt.show()
 
     return

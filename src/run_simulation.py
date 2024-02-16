@@ -22,7 +22,7 @@ parser.add_argument('-drawscale', type=float,default=5.0,required=False, help='S
 parser.add_argument('-drawscalevar', type=float,default=0.0,required=False, help='Sinusoidal variation (over nthreads)  for scaling the number of draws from the distribution, e.g. scale the number of electrons [default 0.0]')
 parser.add_argument('-sasescale', type=int,default=3,required=False, help='Scaling for number of sase subspikes (like number of sinusoids) [default 3]')
 parser.add_argument('-sasescalevar', type=int,default=0,required=False, help='Sinusoidal variation (over nthreads) for scaling the number of sinusoids [default 0]')
-parser.add_argument('-centralenergy', type=float,default=50.0,required=False, help='central photon energy [default 50.0]')
+parser.add_argument('-centralenergy', type=float,default=64.0,required=False, help='central photon energy [default 50.0]')
 parser.add_argument('-centralenergywidth', type=float,default=10.0,required=False, help='central photon energy width [default 10.0]')
 parser.add_argument('-centralenergyvar', type=float,default=0.0,required=False, help='central photon energy variation as sinusoid over nthreads')
 parser.add_argument('-darkscale', type=float,default=0.0005,required=False, help='Scaling for the dark count haze that is independent total intensity [default 0.0005]')
