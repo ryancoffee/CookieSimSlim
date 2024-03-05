@@ -38,6 +38,8 @@ class Params:
         self.spectroscopy = False
         self.tid = 0
         self.threadoffset = 0
+        self.fixedlinear = False
+        self.iscirc = False
         self.rng = np.random.default_rng()
 
     def settidIPrng(self,x):
@@ -139,6 +141,14 @@ class Params:
 
     def setpoldirections(self,x): # this is a list of the directions of the major axis of the ellipse, from 0 to pi, this should be sasecenters long
         self.poldirections = x
+        return self
+
+    def setfixedlinear(self):
+        self.fixedlinear = True 
+        return self
+
+    def setcircular(self):
+        self.iscirc = True
         return self
 
     def setpolstrengths(self,x): # this is the strength of the polarization anisotropy, i.e. 0 for pure circular and 1 for pure linear
@@ -274,8 +284,15 @@ def build_XY(params):
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
     params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
-    params.setpolstrengths([0.0]*ncenters)#list(rng.random(ncenters)))
-    params.setpoldirections([0.0]*ncenters)#list(rng.random(ncenters)*np.pi))
+    if params.iscirc:
+        params.setpolstrengths([0.0]*ncenters)
+        params.setpoldirections([0.0]*ncenters)
+    else:
+        params.setpolstrengths(list(rng.random(ncenters)))
+        if params.fixedlinear:
+            params.setpoldirections([0.0]*ncenters)
+        else:
+            params.setpoldirections(list(rng.random(ncenters)*np.pi))
     bgmat = params.darkscale * np.ones((params.nangles,x.shape[0]),dtype=float)
     ymat = np.zeros((params.nangles,x.shape[0]),dtype=float)
     if ncenters>0:

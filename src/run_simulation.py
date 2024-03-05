@@ -60,6 +60,7 @@ def main():
         p.setkickstrength(args.kickstrength)
         p.setkickstrengthvar(args.kickstrengthvar) #*math.sin(-math.pi/4. + float(i)*2.0*math.pi/float(sz)))
         p.setcentralenergywidth(args.centralenergywidth)
+        p.setcircular()
 
     with mp.Pool(processes=len(paramslist)) as pool:
         pool.map(runprocess,paramslist)
