@@ -13,10 +13,13 @@ conda activate pytorch-gpu
 export SLURM_EXACT=1
 echo starting run 1 at: `date`
 # opath=/sdf/group/lcls/ds/scratch/jhirschm/MRCO_Sim_Data/CookieSimSlim_data/large_even_fiveClass_Dec06_2023_directory/
-opath=/sdf/group/lcls/ds/scratch/jhirschm/MRCO_Sim_Data/CookieSimSlim_data/Jan_15_2024_2subPulse/
+# opath=/sdf/group/lcls/ds/scratch/jhirschm/MRCO_Sim_Data/CookieSimSlim_data/Jan_15_2024_2subPulse/
+opath=/sdf/group/lcls/ds/scratch/jhirschm/MRCO_Sim_Data/CookieSimSlim_data/Mar_13_2024_1pulse/
+
 mkdir -p ${opath}
 outfile=${opath}/two_sub_pulse_Jan15_2024.h5
-python3 ./src/run_simulation.py -ofname ${outfile} -n_threads 64 -n_images 8192 -n_angles 16 -n_energies 512 -polstrength 1 -polstrengthvar 1 -centralenergy 256 -centralenergyvar 256 -kickstrength 128 -kickstrengthvar 32 -drawscale 4 -custom_single_energy_sase True -selected_centers 2 -max_num_sase 5
+# python3 ./src/run_simulation.py -ofname ${outfile} -n_threads 64 -n_images 8192 -n_angles 16 -n_energies 512 -polstrength 1 -polstrengthvar 1 -centralenergy 256 -centralenergyvar 256 -kickstrength 128 -kickstrengthvar 32 -drawscale 4 -custom_single_energy_sase True -selected_centers 2 -max_num_sase 5
+python3 ./src/run_simulation.py -ofname ${outfile} -n_threads 8 -n_images 8192 -n_angles 16 -n_energies 512 -polstrength 1 -polstrengthvar 1 -centralenergy 256 -centralenergyvar 32 -kickstrength 128 -kickstrengthvar 32 -drawscale 4 -custom_single_energy_sase True -selected_centers 1 -max_num_sase 2
 
 # Print the date again -- when finished
 echo Finished at: `date`
