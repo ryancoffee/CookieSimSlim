@@ -1,5 +1,10 @@
 # CookieSimSlim  
 ===============  
+Getting better with FFT convolutions...  
+```
+res = np.fft.ifft(np.fft.fft(f[k]['Ypdf'][()],axis=1)*-1*np.flip(np.fft.fft(f[k]['Ximg'][()],axis=1),axis=1),axis=1)
+```
+
 Slim simulator for LCLS-SLAC CookieBox detector.  
 Updating for 2023 revivial on S3DF.   
 
