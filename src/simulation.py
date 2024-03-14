@@ -29,7 +29,8 @@ class Params:
         self.sasephases = []
         self.saseamps = []
         self.centralenergy = 64 
-        self.centralenergywidth = 32
+        self.centralenergywidth = 8
+        self.centralenergyvar = 8
         self.kickstrength = 30.
         self.kickstrengthvar = 0.
         self.polstrengths = [1.]
@@ -115,7 +116,11 @@ class Params:
         self.centralenergy = x 
         return self
 
-    def setcentralenergywidth(self,x):  # setting the full width of the distribution of x-ray central energies 
+    def setcentralenergywidth(self,x):  # setting the gaussian width of the x-ray central energy spectrum
+        self.centralenergywidth = x
+        return self
+
+    def setcentralenergyvar(self,x):  # setting the full width of the distribution of x-ray central energies 
         self.centralenergywidth = x
         return self
 
@@ -182,6 +187,9 @@ class Params:
     def getcentralenergywidth(self):
         return self.centralenergywidth
 
+    def getcentralenergyvar(self):
+        return self.centralenergyvar
+
     def getsasescale(self):
         return self.sasescale
 
@@ -242,6 +250,7 @@ def runprocess(params):
             grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float16)
             grp.attrs.create('centralenergy', params.centralenergy,dtype=np.float16)
             grp.attrs.create('centralenergywidth', params.centralenergywidth,dtype=np.float16)
+            grp.attrs.create('centralenergyvar', params.centralenergyvar,dtype=np.float16)
             grp.attrs.create('sasewidth', params.sasewidth,dtype=np.float16)
             grp.attrs.create('sasescale', params.sasescale,dtype=np.uint8)
             grp.attrs.create('sasecenters', params.sasecenters,dtype=np.float16)
@@ -281,7 +290,7 @@ def build_XY(params):
     x = np.arange(params.nenergies,dtype=float)
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     ncenters = rng.poisson(params.sasescale)
-    params.setcenters( list(rng.normal(params.centralenergy,params.centralenergywidth,ncenters)) )
+    params.setcenters( list(rng.normal(params.centralenergy,params.centralenergyvar,ncenters)) )
     params.setphases( list(rng.random(ncenters)*2.*np.pi) )
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
     if params.iscirc:
