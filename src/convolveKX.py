@@ -4,6 +4,7 @@ import sys
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from utils import gauss
 
 def kernConv1d(kmat,xmat):
@@ -11,7 +12,7 @@ def kernConv1d(kmat,xmat):
     ind = 0
     rmax = 0
     for i in range(xmat.shape[0]):
-        tmp = np.sum( np.fft.ifft(np.fft.fft(np.roll(kmat,i,axis=0),axis=1)*np.fft.fft(np.flip(xmat,axis=1),axis=1),axis=1).real, axis=0)
+        tmp = np.sum( np.fft.ifft(np.fft.fft(np.roll(xmat,i,axis=0),axis=1)*np.fft.fft(np.flip(kmat,axis=1),axis=1),axis=1).real, axis=0)
         if np.max(tmp)>np.max(res):
             res = tmp
             ind = i
@@ -29,6 +30,8 @@ def scanKernel(widths,strengths,xmat):
     wdref = 0.
     indref = 0
     rowref = 0
+    if not np.max(xmat)>0:
+        return indref,rowref,stref,wdref,vref
     for st in strengths:
         for wd in widths:
             kmat = fillKernel(wd,st,kmat)
@@ -40,6 +43,12 @@ def scanKernel(widths,strengths,xmat):
                 stref = st
                 vref = vmax
                 print(vmax)
+    '''
+    if rowref>(xmat.shape[0]>>1):
+        rowref -= (xmat.shape[0]>>1)
+    if indref>(xmat.shape[0]>>1):
+        indref -= (xmat.shape[0]>>1)
+        '''
     return indref,rowref,stref,wdref,vref
 
 def fillKernel(width,strength,kern):
@@ -47,39 +56,39 @@ def fillKernel(width,strength,kern):
         w = width 
         c = float(kern.shape[0]>>1) + strength * np.sin(r*2*np.pi/float(kern.shape[1]))
         kern[r,:] = gauss(np.arange(kern.shape[0]),w,c)
-    integral = np.sum(kern)
-    return kern/integral
+    #norm = math.sqrt(np.sum(kern))
+    norm = math.sqrt(np.inner(kern.flatten(),kern.flatten()))
+    return kern/norm
 
 def main(fname):
     rng = np.random.default_rng()
     with h5py.File(fname,'r') as f:
         shotkeys = [k for k in f.keys()]
         rng.shuffle(shotkeys)
-        k = shotkeys[0]
+        ki = 0
+        k = shotkeys[ki]
+        while len(f[k].attrs['sasecenters']) !=1:
+            ki += 1
+            k = shotkeys[ki]
         x = f[k]['Ximg'][()]
         y = f[k]['Ypdf'][()]
-        wlist = f[k].attrs['sasewidth']*np.arange(.5,2,.1,dtype=float)
+        wlist = f[k].attrs['sasewidth']*np.arange(.2,1.1,.1,dtype=float)
         print(wlist)
-        slist = f[k].attrs['kickstrength']*np.arange(.5,2,.1,dtype=float)
+        slist = f[k].attrs['kickstrength']*np.arange(.25,4,.125,dtype=float)
         print(slist)
-        indref,rowref,stref,wdref,vref = scanKernel(wlist,slist,y)
+        indref,rowref,stref,wdref,vref = scanKernel(wlist,slist,x)
         kern = np.zeros(x.shape,dtype=float)
         kern = fillKernel(width=wdref,strength=stref,kern=kern)
-        #ix,jx,xmx,resx = kernConv1d(kern,x)
-        #iy,jy,ymx,resy = kernConv1d(kern,y)
         fig,axs = plt.subplots(1,4)
-        #axs[0].plot(resx,label='resx, %i,%i'%(ix,jx))
-        #axs[0].plot(resy,label='resy, %i,%i'%(iy,jy))
-        #axs[0].legend()
-        axs[0].imshow(np.roll(np.roll(kern,indref,axis=0),rowref,axis=1))
-        axs[0].set_title('%i,%i,%i,%i,%i'%(indref,rowref,int(stref),int(wdref),int(vref)))
-        axs[1].imshow(x)
+        proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
+        axs[0].imshow(proj,origin='lower') # finally, this seems correct (based on single spike images)
+        axs[0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
+        axs[1].imshow(x,origin='lower')
         axs[1].set_title('Ximg')
-        axs[2].imshow(y)
+        axs[2].imshow(y,origin='lower')
         axs[2].set_title('Ypdf')
-        axs[3].imshow(kern)
-        #axs[3].imshow(np.roll(np.roll(kern,ix,axis=0),iy,axis=1))
-        axs[3].set_title('kernel')
+        axs[3].imshow(x-np.inner(x.flatten(),proj.flatten())*proj,origin='lower')
+        axs[3].set_title('removed')
         plt.show()
 
     return
