@@ -43,12 +43,6 @@ def scanKernel(widths,strengths,xmat):
                 stref = st
                 vref = vmax
                 print(vmax)
-    '''
-    if rowref>(xmat.shape[0]>>1):
-        rowref -= (xmat.shape[0]>>1)
-    if indref>(xmat.shape[0]>>1):
-        indref -= (xmat.shape[0]>>1)
-        '''
     return indref,rowref,stref,wdref,vref
 
 def fillKernel(width,strength,kern):
@@ -63,7 +57,7 @@ def fillKernel(width,strength,kern):
 def main(fname):
     rng = np.random.default_rng()
     with h5py.File(fname,'r') as f:
-        shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>0]
+        shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>1]
         rng.shuffle(shotkeys)
         for k in shotkeys[:2]:
             x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
@@ -83,15 +77,17 @@ def main(fname):
     
     
             fig,axs = plt.subplots(2,4)
+            clow=0
+            chigh=20
     
-            axs[0][0].imshow(proj,origin='lower') # finally, this seems correct (based on single spike images)
+            axs[0][0].imshow(proj,origin='lower') 
             axs[0][0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
-            axs[0][1].imshow(x,origin='lower')
+            axs[0][1].imshow(x,origin='lower',vmin=clow,vmax=chigh)
             axs[0][1].set_title('Ximg')
             x -= (coeff*proj).astype(int)
             temat[indref,rowref] += coeff
     
-            axs[0][2].imshow(x,origin='lower')
+            axs[0][2].imshow(x,vmin=clow,vmax=chigh,origin='lower')
             axs[0][2].set_title('rm1')
     
             indref,rowref,stref,wdref,vref = scanKernel(wlist,slist,x)
@@ -104,7 +100,7 @@ def main(fname):
             x -= (coeff*proj).astype(int)
             temat[indref,rowref] += coeff
     
-            axs[0][3].imshow(x,origin='lower')
+            axs[0][3].imshow(x,origin='lower',vmin=clow,vmax=chigh)
             axs[0][3].set_title('rm2')
             
     
@@ -118,7 +114,7 @@ def main(fname):
             x -= (coeff*proj).astype(int)
             temat[indref,rowref] += coeff
     
-            axs[1][0].imshow(x,origin='lower')
+            axs[1][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
             axs[1][0].set_title('rm3')
     
     
@@ -132,7 +128,7 @@ def main(fname):
             x -= (coeff*proj).astype(int)
             temat[indref,rowref] += coeff
     
-            axs[1][1].imshow(x,origin='lower')
+            axs[1][1].imshow(x,origin='lower',vmin=clow,vmax=chigh)
             axs[1][1].set_title('rm4')
     
             axs[1][2].imshow(temat,origin='lower')
