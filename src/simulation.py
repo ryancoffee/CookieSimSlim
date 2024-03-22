@@ -129,7 +129,7 @@ class Params:
         return self
 
     def setsasewidth(self,x):
-        self.sasesidth = x
+        self.sasewidth = x
         return self
 
     def setcenters(self,x):
