@@ -5,7 +5,9 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-from utils import gauss
+from utils import gauss,addGauss2d
+
+TEPROD = 1.62
 
 def kernConv1d(kmat,xmat):
     res = np.zeros(xmat.shape[1],dtype=float)
@@ -42,7 +44,6 @@ def scanKernel(widths,strengths,xmat):
                 wdref = wd
                 stref = st
                 vref = vmax
-                print(vmax)
     return indref,rowref,stref,wdref,vref
 
 def fillKernel(width,strength,kern):
@@ -56,86 +57,55 @@ def fillKernel(width,strength,kern):
 
 def main(fname):
     rng = np.random.default_rng()
+    print('For now assuming 10 micron wavelength (0.124eV) for period of 33 1/3 fs for the temporal window')
+    print('For now also assuming 128eV for the energy window')
+    twindow = 100./3 #in femtoseconds (10 microns/(0.3microns/fs))
+    print('.1eV = 100fs, 1eV = 10fs, (30nm width @ 800nm) 50meV = 33fs gives time-energy product eV*fs = %f'%TEPROD)
     with h5py.File(fname,'r') as f:
         shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>1]
         rng.shuffle(shotkeys)
         for k in shotkeys[:2]:
             x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
             y = np.copy(f[k]['Ypdf'][()]).astype(float) # deep copy to preserve original
-            wlist = f[k].attrs['sasewidth']*np.arange(.2,1.1,.1,dtype=float)
+            wlist = f[k].attrs['sasewidth']*np.arange(.25,1.75,.125,dtype=float)
             print(wlist)
-            slist = f[k].attrs['kickstrength']*np.arange(.25,4,.125,dtype=float)
+            slist = f[k].attrs['kickstrength']*np.arange(.25,2,.125,dtype=float)
             print(slist)
+            tstep = twindow/x.shape[0]
             temat = np.zeros(x.shape,dtype=float)
-    
-            indref,rowref,stref,wdref,vref = scanKernel(wlist,slist,x)
+            tedist = np.zeros(x.shape,dtype=float)
             kern = np.zeros(x.shape,dtype=float)
-            kern = fillKernel(width=wdref,strength=stref,kern=kern)
     
-            proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
-            coeff = np.inner(x.flatten(),proj.flatten())
-    
-    
-            fig,axs = plt.subplots(2,4)
+            fig,axs = plt.subplots(3,4)
             clow=0
             chigh=20
     
-            axs[0][0].imshow(proj,origin='lower') 
-            axs[0][0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
-            axs[0][1].imshow(x,origin='lower',vmin=clow,vmax=chigh)
-            axs[0][1].set_title('Ximg')
-            x -= (coeff*proj).astype(int)
-            temat[indref,rowref] += coeff
+            #axs[0][0].imshow(proj,origin='lower') 
+            #axs[0][0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
+            axs[0][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
+            axs[0][0].set_title('Ximg')
+
+
+            for i in range(1,4):
+                indref,rowref,stref,ewidth,vref = scanKernel(wlist,slist,x)
+                kern = fillKernel(width=ewidth,strength=stref,kern=kern)
     
-            axs[0][2].imshow(x,vmin=clow,vmax=chigh,origin='lower')
-            axs[0][2].set_title('rm1')
+                proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
+                coeff = np.inner(x.flatten(),proj.flatten())
+                print(coeff/vref)
+                x -= (coeff*proj).astype(int)
+                temat[indref,rowref] += coeff
+                addGauss2d(tedist,coeff,rowref,indref,TEPROD*ewidth*tstep,ewidth)
     
-            indref,rowref,stref,wdref,vref = scanKernel(wlist,slist,x)
-            kern = np.zeros(x.shape,dtype=float)
-            kern = fillKernel(width=wdref,strength=stref,kern=kern)
+                axs[i//4][i%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
+                axs[i//4][i%4].set_title('rm_%i'%i)
     
-            proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
-            coeff = np.inner(x.flatten(),proj.flatten())
-    
-            x -= (coeff*proj).astype(int)
-            temat[indref,rowref] += coeff
-    
-            axs[0][3].imshow(x,origin='lower',vmin=clow,vmax=chigh)
-            axs[0][3].set_title('rm2')
-            
-    
-            indref,rowref,stref,wdref,vref = scanKernel(wlist,slist,x)
-            kern = np.zeros(x.shape,dtype=float)
-            kern = fillKernel(width=wdref,strength=stref,kern=kern)
-    
-            proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
-            coeff = np.inner(x.flatten(),proj.flatten())
-    
-            x -= (coeff*proj).astype(int)
-            temat[indref,rowref] += coeff
-    
-            axs[1][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
-            axs[1][0].set_title('rm3')
-    
-    
-            indref,rowref,stref,wdref,vref = scanKernel(wlist,slist,x)
-            kern = np.zeros(x.shape,dtype=float)
-            kern = fillKernel(width=wdref,strength=stref,kern=kern)
-    
-            proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
-            coeff = np.inner(x.flatten(),proj.flatten())
-    
-            x -= (coeff*proj).astype(int)
-            temat[indref,rowref] += coeff
-    
-            axs[1][1].imshow(x,origin='lower',vmin=clow,vmax=chigh)
-            axs[1][1].set_title('rm4')
-    
-            axs[1][2].imshow(temat,origin='lower')
-            axs[1][2].set_title('time-energy')
-    
-            axs[1][3].imshow(y,origin='lower')
-            axs[1][3].set_title('Ypdf')
+            axs[-1][-3].imshow(np.roll(np.roll(tedist,tedist.shape[0]//2,axis=0),tedist.shape[1]//2,axis=1),origin='lower')
+            axs[-1][-3].set_title('tedist')
+            axs[-1][-2].imshow(np.roll(np.roll(temat,temat.shape[0]//2,axis=0),temat.shape[1]//2,axis=1),origin='lower')
+            axs[-1][-2].set_title('temat')
+            axs[-1][-1].imshow(y,origin='lower')
+            axs[-1][-1].set_title('Ypdf')
             plt.show()
 
     return
@@ -143,5 +113,10 @@ def main(fname):
 if __name__ == '__main__':
     if len(sys.argv)<2:
         print('give me a file to process')
+        tedist = np.zeros((1<<4,1<<6),dtype=float)
+        addGauss2d(tedist,1,32,8,4,2)
+        plt.imshow(tedist)
+        plt.show()
+
     else:
         main(sys.argv[1])

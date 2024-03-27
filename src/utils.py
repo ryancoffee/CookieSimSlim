@@ -7,6 +7,12 @@ from scipy import stats
 import math
 
 
+
+def addGauss2d(dist,amp,c1,c2,w1,w2):
+    XX,YY = np.meshgrid((np.arange(dist.shape[1])-c1)/w1,(np.arange(dist.shape[0])-c2)/w2)
+    dist += amp*np.exp( -1*(np.power(XX,int(2)) + np.power(YY,int(2))) )
+    return
+
 def testBit(int_type, offset):
     mask = 1 << offset
     return(int_type & mask)
@@ -35,6 +41,8 @@ def getSetBits(int_type):
 
 def mod2exp(int_type, offset):
     return (int_type & ( (1<<int(offset)) - 1) )
+
+
 
 
 class my_dct_f16:
