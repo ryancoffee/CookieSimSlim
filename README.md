@@ -1,3 +1,9 @@
+# TODO
+Audrey is 16 by 128 Ximg --> npulses.  
+Use python library for counting operations/clock cycles per image.  
+```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```  
+And for NNs ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```  
+
 # CookieSimSlim  
 ===============  
 Getting better with FFT convolutions...  
