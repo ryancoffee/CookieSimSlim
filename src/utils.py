@@ -13,6 +13,11 @@ def addGauss2d(dist,amp,c1,c2,w1,w2):
     dist += amp*np.exp( -1*(np.power(XX,int(2)) + np.power(YY,int(2))) )
     return
 
+def addGauss2d_padding_10(dist,amp,c1,c2,w1,w2):
+    XX,YY = np.meshgrid((np.arange(dist.shape[1])-c1-5)/w1,(np.arange(dist.shape[0])-c2-5)/w2)
+    dist += amp*np.exp( -1*(np.power(XX,int(2)) + np.power(YY,int(2))) )
+    return
+
 def testBit(int_type, offset):
     mask = 1 << offset
     return(int_type & mask)

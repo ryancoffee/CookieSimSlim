@@ -5,8 +5,11 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-from utils import gauss,addGauss2d
+import time
 
+from utils import gauss,addGauss2d,addGauss2d_padding_10
+
+NSHOTS = 1<<6
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
@@ -62,10 +65,12 @@ def main(fname,plotting=False):
     print('For now assuming 4 micron wavelength streading for a 13 fs temporal window')
     print('For now also assuming 100eV for the energy window regardless of sampling')
     print('.1eV = 100fs, 1eV = 10fs, (30nm width @ 800nm) 50meV = 33fs gives time-bandwidth product dE[eV]*dt[fs] = %f'%TEPROD)
+    runtimes = []
     with h5py.File(fname,'r') as f:
         shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>1]
         rng.shuffle(shotkeys)
-        for k in shotkeys[:2]:
+        for k in shotkeys[:NSHOTS]:
+            t0 = time.time()
             x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
             y = np.copy(f[k]['Ypdf'][()]).astype(float) # deep copy to preserve original
             tstep = TWIN/x.shape[0]
@@ -75,8 +80,11 @@ def main(fname,plotting=False):
             slist = f[k].attrs['kickstrength']*np.arange(.25,2,.125,dtype=float)
             print(slist)
             temat = np.zeros(x.shape,dtype=float)
-            tedist = np.zeros(x.shape,dtype=float)
+            tedist = np.zeros((x.shape[0]+10,x.shape[1]+10),dtype=float)
             kern = np.zeros(x.shape,dtype=float)
+
+            estep=EWIN/float(tedist.shape[1])
+            tstep=TWIN/float(tedist.shape[0])
     
             clow=0
             chigh=20
@@ -90,29 +98,39 @@ def main(fname,plotting=False):
 
 
             for i in range(4):
+                # HERE HERE HERE  Need to add a threshold on coeff in order to count subspikes, and make a confusion matrix
                 indref,rowref,stref,ewidth,vref = scanKernel(wlist,slist,x)
                 kern = fillKernel(width=ewidth,strength=stref,kern=kern)
+                twidth=float(TEPROD)/ewidth
     
                 proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
                 coeff = np.inner(x.flatten(),proj.flatten())
                 print(coeff/vref)
                 x -= (coeff*proj).astype(int)
-                temat[indref,rowref] += coeff
-                addGauss2d(tedist,coeff,rowref,indref,TEPROD*ewidth*tstep,ewidth)
+                temat[(indref+(temat.shape[1]>>1))%temat.shape[1],
+                        (rowref+(temat.shape[0]>>1))%temat.shape[0]] += coeff
+                addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
     
                 if plotting:
                     axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
                     axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
     
             if plotting:
-                #axs[-1][-3].imshow(np.roll(np.roll(tedist,tedist.shape[0]//2,axis=0),tedist.shape[1]//2,axis=1),origin='lower')
-                #axs[-1][-3].set_title('tedist')
-                axs[-1][-2].imshow(np.roll(np.roll(temat,temat.shape[0]//2,axis=0),temat.shape[1]//2,axis=1),origin='lower')
+                axs[-1][-3].imshow(tedist,origin='lower')
+                axs[-1][-3].set_title('tedist')
+                axs[-1][-2].imshow(temat,origin='lower')
+                #axs[-1][-2].imshow(np.roll(np.roll(temat,temat.shape[0]//2,axis=0),temat.shape[1]//2,axis=1),origin='lower')
                 axs[-1][-2].set_title('temat')
                 axs[-1][-1].imshow(y,origin='lower')
                 axs[-1][-1].set_title('Ypdf')
                 plt.show()
 
+            t1=time.time()
+            runtimes += [t1-t0]
+            nbins = 1<<6
+    #bins = np.arange(nbins+1,dtype=float)/(nbins)*10.*1e9
+    h,b=np.histogram(runtimes,bins=1<<6)
+    _=[print('%f s:'%(b[i]) + ' '*v+'+') for i,v in enumerate(h)]
     return
 
 if __name__ == '__main__':
@@ -133,4 +151,4 @@ if __name__ == '__main__':
         plt.show()
 
     else:
-        main(sys.argv[1],plotting=True)
+        main(sys.argv[1],plotting=False)
