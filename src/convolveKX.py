@@ -118,14 +118,15 @@ def main(fname,plotting=False):
 if __name__ == '__main__':
     if len(sys.argv)<2:
         print('give me a file to process')
-        tedist = np.zeros((1<<4,1<<7),dtype=float)
-        ewidth=2
+        tedist = np.zeros((1<<7,1<<7),dtype=float)
+        ewidth=2.5
+        twidth=float(TEPROD)/ewidth
         estep=EWIN/float(tedist.shape[1])
         tstep=TWIN/float(tedist.shape[0])
-        print(tstep,ewidth,TEPROD/ewidth)
+        print(tstep,estep,twidth,ewidth,TEPROD/ewidth)
         print(tedist.shape[0]//3,tedist.shape[1]//3)
-        addGauss2d(tedist,1,tedist.shape[1]//2,tedist.shape[0]//2,ewidth*estep,TEPROD/ewidth*tstep)
-        addGauss2d(tedist,1,tedist.shape[1]//4,tedist.shape[0]//4,10,2)
+        addGauss2d(tedist,1,tedist.shape[1]//2,tedist.shape[0]//2,ewidth/estep,twidth/tstep)
+        #addGauss2d(tedist,1,tedist.shape[1]//4,tedist.shape[0]//4,10,2)
         print(np.max(tedist))
         plt.imshow(tedist,origin='lower')
         plt.colorbar()
