@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import sys
+import os
+import re
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +11,7 @@ import time
 
 from utils import gauss,addGauss2d,addGauss2d_padding_10
 
+DISTRIBUTIONS = False
 NSHOTS = 1<<6
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
@@ -69,68 +72,142 @@ def main(fname,plotting=False):
     with h5py.File(fname,'r') as f:
         shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>1]
         rng.shuffle(shotkeys)
-        for k in shotkeys[:NSHOTS]:
-            t0 = time.time()
-            x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
-            y = np.copy(f[k]['Ypdf'][()]).astype(float) # deep copy to preserve original
-            tstep = TWIN/x.shape[0]
-            estep = EWIN/x.shape[1]
-            wlist = f[k].attrs['sasewidth']*estep*np.arange(.25,1.75,.125,dtype=float)
-            print(wlist)
-            slist = f[k].attrs['kickstrength']*np.arange(.25,2,.125,dtype=float)
-            print(slist)
-            temat = np.zeros(x.shape,dtype=float)
-            tedist = np.zeros((x.shape[0]+10,x.shape[1]+10),dtype=float)
-            kern = np.zeros(x.shape,dtype=float)
+        oname = fname + '.tempout.h5'
+        m = re.search('^(.*/)(run.+\.\d+)\.h5',fname)
+        if m:
+            oname=m.group(1) + 'output/' + m.group(2) + '.confusion.h5'
+            if not os.path.exists():
+                os.mkdir(m.group(1) + 'output')
+        else:
+            print('using default output file in current directory')
 
-            estep=EWIN/float(tedist.shape[1])
-            tstep=TWIN/float(tedist.shape[0])
-    
-            clow=0
-            chigh=20
-            if plotting:
-                fig,axs = plt.subplots(3,4)
-    
-                #axs[0][0].imshow(proj,origin='lower') 
-                #axs[0][0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
-                axs[0][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
-                axs[0][0].set_title('Ximg')
+        if DISTRIBUTIONS:
+            temat = np.zeros(f[shotkeys[0]]['Ximg'].shape,dtype=float)
+            tedist = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+10,x.shape[1]+10),dtype=float)
 
+        with h5py.File(oname,'r') as o:
+            if 'shotkeys' in o.keys():
+                o['40pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
+                o['20pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
+                o['10pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
+                o['05pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
+                o['02pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
+                o['01pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
+                o['shotkeys']=shotkeys[:NSHOTS]
+                o['coeffhist']=np.zeros(1<<7,dtype=np.uint32)
+                o['coeffbins']=np.arange(1<<7+1,dtype=float)/float(1<<7)
+            else: 
+                o.create_dataset('40pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('20pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('10pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('05pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('02pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('01pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('shotkeys',data=shotkeys[:NSHOTS])
+                o.create_dataset('coeffhist',data=np.zeros(1<<7,dtype=np.uint32))
+                o.create_dataset('coeffbins',data=np.arange(1<<7+1,dtype=float)/float(1<<7))
 
-            for i in range(4):
-                # HERE HERE HERE  Need to add a threshold on coeff in order to count subspikes, and make a confusion matrix
-                indref,rowref,stref,ewidth,vref = scanKernel(wlist,slist,x)
-                kern = fillKernel(width=ewidth,strength=stref,kern=kern)
-                twidth=float(TEPROD)/ewidth
-    
-                proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
-                coeff = np.inner(x.flatten(),proj.flatten())
-                print(coeff/vref)
-                x -= (coeff*proj).astype(int)
-                temat[(indref+(temat.shape[1]>>1))%temat.shape[1],
-                        (rowref+(temat.shape[0]>>1))%temat.shape[0]] += coeff
-                addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
-    
+            coefflist = []
+            nsase={'true':0}
+            for p in o.keys():
+                if re.search('\d+pct',p):
+                    nsase[p]=0
+
+            for k in shotkeys[:NSHOTS]:
+                t0 = time.time()
+                x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
+                y = np.copy(f[k]['Ypdf'][()]).astype(float) # deep copy to preserve original
+                nsase['true'] = f[k].attrs['sasecenters'].shape[0]
+                tstep = TWIN/x.shape[0]
+                estep = EWIN/x.shape[1]
+                wlist = f[k].attrs['sasewidth']*estep*np.arange(.25,1.75,.125,dtype=float)
+                print(wlist)
+                slist = f[k].attrs['kickstrength']*np.arange(.25,2,.125,dtype=float)
+                print(slist)
+                kern = np.zeros(x.shape,dtype=float)
+
+                estep=EWIN/float(tedist.shape[1])
+                tstep=TWIN/float(tedist.shape[0])
+        
+                clow=0
+                chigh=20
                 if plotting:
-                    axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
-                    axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
+                    fig,axs = plt.subplots(3,4)
     
-            if plotting:
-                axs[-1][-3].imshow(tedist,origin='lower')
-                axs[-1][-3].set_title('tedist')
-                axs[-1][-2].imshow(temat,origin='lower')
-                #axs[-1][-2].imshow(np.roll(np.roll(temat,temat.shape[0]//2,axis=0),temat.shape[1]//2,axis=1),origin='lower')
-                axs[-1][-2].set_title('temat')
-                axs[-1][-1].imshow(y,origin='lower')
-                axs[-1][-1].set_title('Ypdf')
-                plt.show()
+                    #axs[0][0].imshow(proj,origin='lower') 
+                    #axs[0][0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
+                    axs[0][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
+                    axs[0][0].set_title('Ximg')
 
-            t1=time.time()
-            runtimes += [t1-t0]
-            nbins = 1<<6
+                cmax = 1.0
+                cthis = 1.0
+                for i in range(4):
+                    indref,rowref,stref,ewidth,vref = scanKernel(wlist,slist,x)
+                    if i==0:
+                        cmax = vref
+                    kern = fillKernel(width=ewidth,strength=stref,kern=kern)
+                    twidth=float(TEPROD)/ewidth
+    
+                    proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
+                    coeff = np.inner(x.flatten(),proj.flatten())
+                    coefflist += [coeff]
+                    cthis = coeff
+                    rat = cthis/cmax
+                    if rat > 0.4:
+                        nsase['40pct'] += 1; nsase['20pct'] += 1; nsase['10pct'] += 1;  nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
+                    elif rat > 0.2:
+                        nsase['20pct'] += 1; nsase['10pct'] += 1;  nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
+                    elif rat > 0.1:
+                        nsase['10pct'] += 1;  nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
+                    elif rat > 0.05:
+                        nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
+                    elif rat > 0.02:
+                        nsase['02pct'] += 1;  nsase['01pct'] += 1;
+                    elif rat > 0.01:
+                        nsase['01pct'] += 1;
+
+                    x -= (coeff*proj).astype(int)
+
+                    if DISTRIBUTIONS:
+
+                        temat[(indref+(temat.shape[1]>>1))%temat.shape[1],
+                                (rowref+(temat.shape[0]>>1))%temat.shape[0]] += coeff
+                        addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
+    
+                        if plotting:
+                            axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
+                            axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
+    
+                    if plotting:
+                        axs[-1][-3].imshow(tedist,origin='lower')
+                        axs[-1][-3].set_title('tedist')
+                        axs[-1][-2].imshow(temat,origin='lower')
+                        #axs[-1][-2].imshow(np.roll(np.roll(temat,temat.shape[0]//2,axis=0),temat.shape[1]//2,axis=1),origin='lower')
+                        axs[-1][-2].set_title('temat')
+                        axs[-1][-1].imshow(y,origin='lower')
+                        axs[-1][-1].set_title('Ypdf')
+                        plt.show()
+
+
+                    i = np.min(nsase['true'],o[k].shape[0]-1)
+                    o['true'].attrs[i] += 1
+                    for k in nsase.keys():
+                        if re.search('\d+pct',k):
+                            j = np.min(nsase[k],o[k].shape[1]-1)
+                            o[k][i,j] += 1
+                            o[k].attrs[j] += 1
+
+                t1=time.time()
+                runtimes += [t1-t0]
+
+            print('... working coefficient histogram ... ')
+            o['coeffhist'],o['coeffbins'] = np.historam(coefflist,o.coeffhist.shape[0]+1)
+
     #bins = np.arange(nbins+1,dtype=float)/(nbins)*10.*1e9
-    h,b=np.histogram(runtimes,bins=1<<6)
-    _=[print('%f s:'%(b[i]) + ' '*v+'+') for i,v in enumerate(h)]
+    nbins = 1<<6
+    print('... working runtime histogram ... ')
+    h,b=np.histogram(runtimes,bins=nbins)
+    _=[print('%02i.%i s:'%(int(b[i]),int((b[i]%1)*1e3)) + ' '*v+'+') for i,v in enumerate(h)]
     return
 
 if __name__ == '__main__':
