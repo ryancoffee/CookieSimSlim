@@ -12,15 +12,17 @@ import time
 from utils import gauss,addGauss2d,addGauss2d_padding_10
 
 DISTRIBUTIONS = False
-NSHOTS = 1<<2
+NSHOTS = 1<<4
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
+THRESH = 10
 
 def kernConv1d(kmat,xmat):
     res = np.zeros(xmat.shape[1],dtype=float)
     ind = 0
     rmax = 0
+    vmax = 0.
     for i in range(xmat.shape[0]):
         tmp = np.sum( np.fft.ifft(np.fft.fft(np.roll(xmat,i,axis=0),axis=1)*np.fft.fft(np.flip(kmat,axis=1),axis=1),axis=1).real, axis=0)
         if np.max(tmp)>np.max(res):
@@ -89,6 +91,7 @@ def main(fname,plotting=False):
         with h5py.File(opath + '/' + oname,'w') as o:
             if 'shotkeys' in o.keys():
                 o['true'].attrs['hist'] = np.zeros((1<<4),dtype=np.uint16)
+                o['80pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['40pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['20pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['10pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
@@ -101,6 +104,7 @@ def main(fname,plotting=False):
             else: 
                 o.create_group('true')
                 o['true'].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
+                o.create_dataset('80pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
                 o.create_dataset('40pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
                 o.create_dataset('20pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
                 o.create_dataset('10pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
@@ -123,15 +127,21 @@ def main(fname,plotting=False):
 
             for k in shotkeys[:NSHOTS]:
                 t0 = time.time()
+
+                nsase={'true':0}
+                for p in o.keys():
+                    if re.search('\d+pct',p):
+                        nsase[p]=0
+
                 x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
                 y = np.copy(f[k]['Ypdf'][()]).astype(float) # deep copy to preserve original
                 nsase['true'] = f[k].attrs['sasecenters'].shape[0]
                 tstep = TWIN/x.shape[0]
                 estep = EWIN/x.shape[1]
                 wlist = f[k].attrs['sasewidth']*estep*np.arange(.25,1.75,.125,dtype=float)
-                print(wlist)
+                #print(wlist)
                 slist = f[k].attrs['kickstrength']*np.arange(.25,2,.125,dtype=float)
-                print(slist)
+                #print(slist)
                 kern = np.zeros(x.shape,dtype=float)
 
                 estep=EWIN/float(tedist.shape[1])
@@ -160,21 +170,25 @@ def main(fname,plotting=False):
                     coeff = np.inner(x.flatten(),proj.flatten())
                     coefflist += [coeff]
                     cthis = coeff
-                    rat = cthis/cmax
-                    if rat > 0.4:
-                        nsase['40pct'] += 1; nsase['20pct'] += 1; nsase['10pct'] += 1;  nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
-                    elif rat > 0.2:
-                        nsase['20pct'] += 1; nsase['10pct'] += 1;  nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
-                    elif rat > 0.1:
-                        nsase['10pct'] += 1;  nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
-                    elif rat > 0.05:
-                        nsase['05pct'] += 1; nsase['02pct'] += 1;  nsase['01pct'] += 1;
-                    elif rat > 0.02:
-                        nsase['02pct'] += 1;  nsase['01pct'] += 1;
-                    elif rat > 0.01:
-                        nsase['01pct'] += 1;
-
-                    x -= (coeff*proj).astype(int)
+                    if cthis > THRESH:
+                        rat = cthis/cmax
+                    
+                        if rat > 0.8:
+                            nsase['80pct'] += 1;
+                        if rat > 0.4:
+                            nsase['40pct'] += 1;
+                        if rat > 0.2:
+                            nsase['20pct'] += 1;
+                        if rat > 0.1:
+                            nsase['10pct'] += 1;
+                        if rat > 0.05:
+                            nsase['05pct'] += 1;
+                        if rat > 0.02:
+                            nsase['02pct'] += 1;
+                        if rat > 0.01:
+                            nsase['01pct'] += 1;
+    
+                        x -= (coeff*proj).astype(int)
 
                     if DISTRIBUTIONS:
 
@@ -197,13 +211,14 @@ def main(fname,plotting=False):
                         plt.show()
 
 
-                    i = min(nsase['true'],o['true'].attrs['hist'].shape[0]-1)
-                    o['true'].attrs['hist'][i] += 1
-                    for k in nsase.keys():
-                        if re.search('\d+pct',k):
-                            j = min(nsase[k],o[k].shape[1]-1)
-                            o[k][i,j] += 1
-                            o[k].attrs['hist'][j] += 1
+                i = min(nsase['true'],o['true'].attrs['hist'].shape[0]-1)
+                o['true'].attrs['hist'][i] += 1
+                for p in nsase.keys():
+                    if re.search('\d+pct',p):
+                        j = min(nsase[p],o[p].shape[1]-1)
+                        print('%s:(%i %i)'%(p,i,j))
+                        o[p][i,j] += 1
+                        o[p].attrs['hist'][j] += 1
 
                 t1=time.time()
                 runtimes += [t1-t0]
