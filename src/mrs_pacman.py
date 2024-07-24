@@ -75,18 +75,19 @@ def main(fname,plotting=False):
         oname = fname + '.tempout.h5'
         m = re.search('^(.*/)(run.+\.\d+)\.h5',fname)
         if m:
-            oname=m.group(1) + 'output/' + m.group(2) + '.confusion.h5'
-            if not os.path.exists():
-                os.mkdir(m.group(1) + 'output')
+            oname = m.group(2) + '.confusion.h5'
+            opath = m.group(1) + 'output/'
+            if not os.path.exists(opath):
+                os.mkdir(opath)
         else:
             print('using default output file in current directory')
 
-        if DISTRIBUTIONS:
-            temat = np.zeros(f[shotkeys[0]]['Ximg'].shape,dtype=float)
-            tedist = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+10,x.shape[1]+10),dtype=float)
+        temat = np.zeros(f[shotkeys[0]]['Ximg'].shape,dtype=float)
+        tedist = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+10,f[shotkeys[0]]['Ximg'].shape[1]+10),dtype=float)
 
-        with h5py.File(oname,'r') as o:
+        with h5py.File(opath + '/' + oname,'w') as o:
             if 'shotkeys' in o.keys():
+                o['true'].attrs['hist'] = np.zeros((1<<4),dtype=np.uint16)
                 o['40pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['20pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['10pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
@@ -97,21 +98,27 @@ def main(fname,plotting=False):
                 o['coeffhist']=np.zeros(1<<7,dtype=np.uint32)
                 o['coeffbins']=np.arange(1<<7+1,dtype=float)/float(1<<7)
             else: 
-                o.create_dataset('40pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('20pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('10pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('05pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('02pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('01pct',np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('shotkeys',data=shotkeys[:NSHOTS])
-                o.create_dataset('coeffhist',data=np.zeros(1<<7,dtype=np.uint32))
-                o.create_dataset('coeffbins',data=np.arange(1<<7+1,dtype=float)/float(1<<7))
+                o.create_group('true')
+                o['true'].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
+                o.create_dataset('40pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('20pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('10pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('05pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('02pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('01pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o.create_dataset('shotkeys',data = shotkeys[:NSHOTS])
+                o.create_dataset('coeffhist',data = np.zeros(1<<7,dtype=np.uint32))
+                o.create_dataset('coeffbins',data = np.arange(1<<7+1,dtype=float)/float(1<<7))
 
             coefflist = []
             nsase={'true':0}
             for p in o.keys():
                 if re.search('\d+pct',p):
                     nsase[p]=0
+                    if 'hist' in o[p].attrs.keys():
+                        o[p]['hist'] = np.zeros((1<<4),dtype=np.uint16)
+                    else:
+                        o[p].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
 
             for k in shotkeys[:NSHOTS]:
                 t0 = time.time()
@@ -189,13 +196,13 @@ def main(fname,plotting=False):
                         plt.show()
 
 
-                    i = np.min(nsase['true'],o[k].shape[0]-1)
-                    o['true'].attrs[i] += 1
+                    i = min(nsase['true'],o['true'].attrs['hist'].shape[0]-1)
+                    o['true'].attrs['hist'][i] += 1
                     for k in nsase.keys():
                         if re.search('\d+pct',k):
-                            j = np.min(nsase[k],o[k].shape[1]-1)
+                            j = min(nsase[k],o[k].shape[1]-1)
                             o[k][i,j] += 1
-                            o[k].attrs[j] += 1
+                            o[k].attrs['hist'][j] += 1
 
                 t1=time.time()
                 runtimes += [t1-t0]
