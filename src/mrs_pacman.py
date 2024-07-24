@@ -12,7 +12,7 @@ import time
 from utils import gauss,addGauss2d,addGauss2d_padding_10
 
 DISTRIBUTIONS = False
-NSHOTS = 1<<6
+NSHOTS = 1<<2
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
@@ -36,6 +36,7 @@ def conv1d(xmat,ymat):
 def scanKernel(widths,strengths,xmat):
     kmat = np.zeros(xmat.shape,dtype=float)
     vref = 0.
+    vmax = 0.
     stref = 0.
     wdref = 0.
     indref = 0
@@ -95,8 +96,8 @@ def main(fname,plotting=False):
                 o['02pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['01pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['shotkeys']=shotkeys[:NSHOTS]
-                o['coeffhist']=np.zeros(1<<7,dtype=np.uint32)
-                o['coeffbins']=np.arange(1<<7+1,dtype=float)/float(1<<7)
+                o['coeffhist']=np.zeros((1<<7),dtype=np.uint32)
+                o['coeffbins']=np.arange((1<<7)+1,dtype=float)/float(1<<7)
             else: 
                 o.create_group('true')
                 o['true'].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
@@ -108,7 +109,7 @@ def main(fname,plotting=False):
                 o.create_dataset('01pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
                 o.create_dataset('shotkeys',data = shotkeys[:NSHOTS])
                 o.create_dataset('coeffhist',data = np.zeros(1<<7,dtype=np.uint32))
-                o.create_dataset('coeffbins',data = np.arange(1<<7+1,dtype=float)/float(1<<7))
+                o.create_dataset('coeffbins',data = np.arange((1<<7)+1,dtype=float)/float(1<<7))
 
             coefflist = []
             nsase={'true':0}
@@ -208,7 +209,9 @@ def main(fname,plotting=False):
                 runtimes += [t1-t0]
 
             print('... working coefficient histogram ... ')
-            o['coeffhist'],o['coeffbins'] = np.historam(coefflist,o.coeffhist.shape[0]+1)
+            h,b = np.histogram(coefflist,o['coeffhist'].shape[0])
+            o['coeffhist'][()] = h
+            o['coeffbins'][()] = b
 
     #bins = np.arange(nbins+1,dtype=float)/(nbins)*10.*1e9
     nbins = 1<<6
