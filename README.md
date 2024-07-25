@@ -17,8 +17,13 @@ Updating for 2023 revivial on S3DF.
 # Parallelism
 Now I'm using mpi at home.  Usage is something like this... from directory /mnt/islands where I've moved the code as well, and using hard paths.  \
 ```bash
-mpirun --host baratza:1,java:1,flores:1,timor:1,papua:1 /mnt/islands/CookieSimSlim/src/run_simulation.py -ofname /mnt/islands/CookieSimSlim_data/css.h5 -n_threads 8 -n_angles 128 -n_energies 128 -n_images 1024 -offset_threads 16
+mpirun --host baratza:1,java:1,flores:1,timor:1,papua:1,sulawesi:1,sumatra:1,beanbox:1,roaster:1,ethiopia:1,yemen:1,hario:1,burundi:1,rwanda:1 /mnt/islands/CookieSimSlim/src/run_simulation.py -ofname /mnt/islands/CookieSimSlim_data/css.16x128.h5 -n_threads 4 -n_angles 16 -n_energies 128 -n_images 1024 -centralenergy 64 -centralenergyvar 32 -kickstrength 32 -polstrength 1 -polstrengthvar 0 -offset_threads 0
 ```  
+
+All the workers now ... well not on lipa, she's acting up ...   
+```bash
+mpirun --host baratza:1,java:1,flores:1,timor:1,papua:1,sulawesi:1,sumatra:1,kona:1,oahu:1,kao:1,batangas:1,amadeo:1,bialetti:1,aeropress:1,beanbox:1,roaster:1,ethiopia:1,yemen:1,hario:1,burundi:1,rwanda:1 /mnt/islands/CookieSimSlim/src/run_simulation.py -ofname /mnt/islands/CookieSimSlim_data/css.16x128.h5 -n_threads 4 -n_angles 16 -n_energies 128 -n_images 1024 -centralenergy 64 -centralenergyvar 32 -kickstrength 32 -polstrength 1 -polstrengthvar 0 -offset_threads 8
+```
 The reason for using only one slot for the simulation is that it is itself parallel inside the node, and each thread that gets spun up by run\_sim will get its own filename and these collide if mpirun runs multiple jobs on a single node.  
 Just a weird quirk of the way I parallelized first across single node and now am also playing with mpirun.  
 
