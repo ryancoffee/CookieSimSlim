@@ -1,0 +1,69 @@
+For now assuming 4 micron wavelength streading for a 13 fs temporal window
+For now also assuming 100eV for the energy window regardless of sampling
+.1eV = 100fs, 1eV = 10fs, (30nm width @ 800nm) 50meV = 33fs gives time-bandwidth product dE[eV]*dt[fs] = 1.620000
+... working coefficient histogram ... 
+... working runtime histogram ... 
+04.495 s: +
+04.511 s:+
+04.526 s: +
+04.542 s:+
+04.557 s:+
+04.573 s:  +
+04.588 s:+
+04.604 s:+
+04.619 s:+
+04.635 s: +
+04.650 s: +
+04.666 s:+
+04.681 s:+
+04.697 s:+
+04.712 s: +
+04.728 s:+
+04.743 s:+
+04.759 s:+
+04.774 s:+
+04.790 s: +
+04.805 s: +
+04.821 s:   +
+04.836 s:+
+04.852 s:  +
+04.867 s: +
+04.883 s:+
+04.898 s: +
+04.913 s:+
+04.929 s:+
+04.944 s:+
+04.960 s:+
+04.975 s:+
+04.991 s:+
+05.6 s:+
+05.22 s:+
+05.37 s:+
+05.53 s:+
+05.68 s:+
+05.84 s:+
+05.99 s:+
+05.115 s:+
+05.130 s:+
+05.146 s:+
+05.161 s:+
+05.177 s:+
+05.192 s:+
+05.208 s:+
+05.223 s:+
+05.239 s:+
+05.254 s:   +
+05.270 s:       +
+05.285 s:         +
+05.301 s:                              +
+05.316 s:                  +
+05.332 s:              +
+05.347 s:                   +
+05.363 s:                +
+05.378 s:                +
+05.394 s:            +
+05.409 s:   +
+05.425 s:  +
+05.440 s: +
+05.456 s:+
+05.471 s: +

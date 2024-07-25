@@ -12,7 +12,7 @@ import time
 from utils import gauss,addGauss2d,addGauss2d_padding_10
 
 DISTRIBUTIONS = False
-NSHOTS = 1<<4
+NSHOTS = 1<<10
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
@@ -216,7 +216,7 @@ def main(fname,plotting=False):
                 for p in nsase.keys():
                     if re.search('\d+pct',p):
                         j = min(nsase[p],o[p].shape[1]-1)
-                        print('%s:(%i %i)'%(p,i,j))
+                        #print('%s:(%i %i)'%(p,i,j))
                         o[p][i,j] += 1
                         o[p].attrs['hist'][j] += 1
 
