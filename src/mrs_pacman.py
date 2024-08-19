@@ -11,8 +11,9 @@ import time
 
 from utils import gauss,addGauss2d,addGauss2d_padding_10
 
-DISTRIBUTIONS = False
-NSHOTS = 1<<10
+DISTRIBUTIONS = True
+#NSHOTS = 1<<10
+NSHOTS = 1<<3
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
@@ -58,10 +59,10 @@ def scanKernel(widths,strengths,xmat):
     return indref,rowref,stref,wdref,vref
 
 def fillKernel(width,strength,kern):
-    for r in range(kern.shape[1]):
+    for r in range(kern.shape[0]):
         w = width 
-        c = float(kern.shape[0]>>1) + strength * np.sin(r*2*np.pi/float(kern.shape[1]))
-        kern[r,:] = gauss(np.arange(kern.shape[0]),w,c)
+        c = float(kern.shape[0]>>1) + strength * np.sin(r*2*np.pi/float(kern.shape[0]))
+        kern[r,:] = gauss(np.arange(kern.shape[1]),w,c)
     #norm = math.sqrt(np.sum(kern))
     norm = math.sqrt(np.inner(kern.flatten(),kern.flatten()))
     return kern/norm
@@ -76,7 +77,7 @@ def main(fname,plotting=False):
         shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>1]
         rng.shuffle(shotkeys)
         oname = fname + '.tempout.h5'
-        m = re.search('^(.*/)(run.+\.\d+)\.h5',fname)
+        m = re.search('^(.*/)(\w+.+\.\d+)\.h5',fname)
         if m:
             oname = m.group(2) + '.confusion.h5'
             opath = m.group(1) + 'output/'
@@ -126,6 +127,9 @@ def main(fname,plotting=False):
                         o[p].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
 
             for k in shotkeys[:NSHOTS]:
+                temat = np.zeros(f[shotkeys[0]]['Ximg'].shape,dtype=float)
+                tedist = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+10,f[shotkeys[0]]['Ximg'].shape[1]+10),dtype=float)
+
                 t0 = time.time()
 
                 nsase={'true':0}
@@ -133,9 +137,12 @@ def main(fname,plotting=False):
                     if re.search('\d+pct',p):
                         nsase[p]=0
 
+                nsase['true'] = f[k].attrs['sasecenters'].shape[0]
+                if nsase['true']>2:
+                    print('skipping nsase = %i'%(nsase['true']))
+                    continue
                 x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
                 y = np.copy(f[k]['Ypdf'][()]).astype(float) # deep copy to preserve original
-                nsase['true'] = f[k].attrs['sasecenters'].shape[0]
                 tstep = TWIN/x.shape[0]
                 estep = EWIN/x.shape[1]
                 wlist = f[k].attrs['sasewidth']*estep*np.arange(.25,1.75,.125,dtype=float)
@@ -154,12 +161,13 @@ def main(fname,plotting=False):
     
                     #axs[0][0].imshow(proj,origin='lower') 
                     #axs[0][0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
-                    axs[0][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
+                    axs[0][0].pcolor(x)#,vmin=clow,vmax=chigh)
+                    #axs[0][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
                     axs[0][0].set_title('Ximg')
 
                 cmax = 1.0
                 cthis = 1.0
-                for i in range(4):
+                for i in range(5):
                     indref,rowref,stref,ewidth,vref = scanKernel(wlist,slist,x)
                     if i==0:
                         cmax = vref
@@ -190,25 +198,34 @@ def main(fname,plotting=False):
     
                         x -= (coeff*proj).astype(int)
 
+                        if plotting:
+                            #axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
+                            axs[(i+1)//4][(i+1)%4].pcolor(x)#,vmin=clow,vmax=chigh)
+                            axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
+                    
                     if DISTRIBUTIONS:
 
-                        temat[(indref+(temat.shape[1]>>1))%temat.shape[1],
-                                (rowref+(temat.shape[0]>>1))%temat.shape[0]] += coeff
-                        addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
+                        #temat[(indref+(temat.shape[1]>>1))%temat.shape[1],
+                        #        (rowref+(temat.shape[0]>>1))%temat.shape[0]] += coeff
+                        #addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
+                        temat[(indref+(temat.shape[0]>>1))%temat.shape[0],
+                                (rowref+(temat.shape[1]>>1))%temat.shape[1]] += coeff
+                        addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[1]>>1))%tedist.shape[1],(indref+(tedist.shape[0]>>1))%tedist.shape[0],ewidth/estep,twidth/tstep)
     
-                        if plotting:
-                            axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
-                            axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
     
                     if plotting:
-                        axs[-1][-3].imshow(tedist,origin='lower')
+                        #axs[-1][-3].imshow(tedist,origin='lower')
+                        axs[-1][-3].pcolor(tedist)
                         axs[-1][-3].set_title('tedist')
-                        axs[-1][-2].imshow(temat,origin='lower')
+                        #axs[-1][-2].imshow(temat,origin='lower')
+                        axs[-1][-2].pcolor(temat)
                         #axs[-1][-2].imshow(np.roll(np.roll(temat,temat.shape[0]//2,axis=0),temat.shape[1]//2,axis=1),origin='lower')
                         axs[-1][-2].set_title('temat')
-                        axs[-1][-1].imshow(y,origin='lower')
+                        axs[-1][-1].pcolor(y)
+                        #axs[-1][-1].imshow(y,origin='lower')
                         axs[-1][-1].set_title('Ypdf')
-                        plt.show()
+                if plotting:
+                    plt.show()
 
 
                 i = min(nsase['true'],o['true'].attrs['hist'].shape[0]-1)
@@ -253,4 +270,4 @@ if __name__ == '__main__':
         plt.show()
 
     else:
-        main(sys.argv[1],plotting=False)
+        main(sys.argv[1],plotting=True)
