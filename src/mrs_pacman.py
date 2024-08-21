@@ -141,6 +141,7 @@ def main(fname,plotting=False):
                 if nsase['true']>2:
                     print('skipping nsase = %i'%(nsase['true']))
                     continue
+
                 x = np.copy(f[k]['Ximg'][()]).astype(int) # deep copy to preserve original
                 y = np.copy(f[k]['Ypdf'][()]).astype(float) # deep copy to preserve original
                 tstep = TWIN/x.shape[0]
@@ -167,17 +168,20 @@ def main(fname,plotting=False):
 
                 cmax = 1.0
                 cthis = 1.0
-                for i in range(5):
+                for i in range(3):
                     indref,rowref,stref,ewidth,vref = scanKernel(wlist,slist,x)
                     if i==0:
                         cmax = vref
+
                     kern = fillKernel(width=ewidth,strength=stref,kern=kern)
                     twidth=float(TEPROD)/ewidth
     
                     proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
+                    #proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
                     coeff = np.inner(x.flatten(),proj.flatten())
                     coefflist += [coeff]
                     cthis = coeff
+                    print(coeff)
                     if cthis > THRESH:
                         rat = cthis/cmax
                     
@@ -196,12 +200,12 @@ def main(fname,plotting=False):
                         if rat > 0.01:
                             nsase['01pct'] += 1;
     
-                        x -= (coeff*proj).astype(int)
+                    x -= 4*(coeff*proj).astype(int)
 
-                        if plotting:
-                            #axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
-                            axs[(i+1)//4][(i+1)%4].pcolor(x)#,vmin=clow,vmax=chigh)
-                            axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
+                    if plotting:
+                        #axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
+                        axs[(i+1)//4][(i+1)%4].pcolor(x)#,vmin=clow,vmax=chigh)
+                        axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
                     
                     if DISTRIBUTIONS:
 
