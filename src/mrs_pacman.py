@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import time
+import cv2
 
 from utils import gauss,addGauss2d,addGauss2d_padding_10
 
@@ -61,7 +62,7 @@ def scanKernel(widths,strengths,xmat):
 def fillKernel(width,strength,kern):
     for r in range(kern.shape[0]):
         w = width 
-        c = float(kern.shape[0]>>1) + strength * np.sin(r*2*np.pi/float(kern.shape[0]))
+        c = float(kern.shape[1]>>1) + strength * np.sin(r*2*np.pi/float(kern.shape[0]))
         kern[r,:] = gauss(np.arange(kern.shape[1]),w,c)
     #norm = math.sqrt(np.sum(kern))
     norm = math.sqrt(np.inner(kern.flatten(),kern.flatten()))
@@ -128,7 +129,7 @@ def main(fname,plotting=False):
 
             for k in shotkeys[:NSHOTS]:
                 temat = np.zeros(f[shotkeys[0]]['Ximg'].shape,dtype=float)
-                tedist = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+10,f[shotkeys[0]]['Ximg'].shape[1]+10),dtype=float)
+                tedist = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+20,f[shotkeys[0]]['Ximg'].shape[1]+20),dtype=float)
 
                 t0 = time.time()
 
@@ -151,6 +152,7 @@ def main(fname,plotting=False):
                 slist = f[k].attrs['kickstrength']*np.arange(.25,2,.125,dtype=float)
                 #print(slist)
                 kern = np.zeros(x.shape,dtype=float)
+                proj_display = np.zeros(x.shape,dtype=float)
 
                 estep=EWIN/float(tedist.shape[1])
                 tstep=TWIN/float(tedist.shape[0])
@@ -160,7 +162,6 @@ def main(fname,plotting=False):
                 if plotting:
                     fig,axs = plt.subplots(3,4)
     
-                    #axs[0][0].imshow(proj,origin='lower') 
                     #axs[0][0].set_title('st%.1f, wd%.1f, v%.1f'%(stref,wdref,vref))
                     axs[0][0].pcolor(x)#,vmin=clow,vmax=chigh)
                     #axs[0][0].imshow(x,origin='lower',vmin=clow,vmax=chigh)
@@ -168,13 +169,19 @@ def main(fname,plotting=False):
 
                 cmax = 1.0
                 cthis = 1.0
-                for i in range(3):
+                ewidthmean = 1.0
+                twidthmean = 1.0
+                for i in range(5):
                     indref,rowref,stref,ewidth,vref = scanKernel(wlist,slist,x)
                     if i==0:
                         cmax = vref
 
                     kern = fillKernel(width=ewidth,strength=stref,kern=kern)
                     twidth=float(TEPROD)/ewidth
+
+                    ewidthmean *= i
+                    ewidthmean += ewidth
+                    ewidthmean -= i+1
     
                     proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
                     #proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
@@ -200,7 +207,8 @@ def main(fname,plotting=False):
                         if rat > 0.01:
                             nsase['01pct'] += 1;
     
-                    x -= 4*(coeff*proj).astype(int)
+                    x -= (coeff*proj).astype(int)
+                    proj_display += coeff*proj
 
                     if plotting:
                         #axs[(i+1)//4][(i+1)%4].imshow(x,vmin=clow,vmax=chigh,origin='lower')
@@ -212,12 +220,19 @@ def main(fname,plotting=False):
                         #temat[(indref+(temat.shape[1]>>1))%temat.shape[1],
                         #        (rowref+(temat.shape[0]>>1))%temat.shape[0]] += coeff
                         #addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
-                        temat[(indref+(temat.shape[0]>>1))%temat.shape[0],
-                                (rowref+(temat.shape[1]>>1))%temat.shape[1]] += coeff
-                        addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[1]>>1))%tedist.shape[1],(indref+(tedist.shape[0]>>1))%tedist.shape[0],ewidth/estep,twidth/tstep)
+                        #temat[(indref+(temat.shape[0]>>1))%temat.shape[0],
+                        #        (rowref+(temat.shape[1]>>1))%temat.shape[1]] += coeff
+                        temat[(indref),
+                                (rowref)] += coeff
+                        tedist[10:-10,10:-10] = temat
+                        tedist = cv2.GaussianBlur(tedist,(15,3),0)#,ewidthmean,twidthmean)
+                        #addGauss2d_padding_10(tedist,coeff,indref,rowref,ewidth/estep,twidth/tstep)
+                        #addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[1]>>1))%tedist.shape[1],(indref+(tedist.shape[0]>>1))%tedist.shape[0],ewidth/estep,twidth/tstep)
     
     
                     if plotting:
+                        axs[-1][-4].pcolor(proj_display)
+                        axs[-1][-4].set_title('sum projections')
                         #axs[-1][-3].imshow(tedist,origin='lower')
                         axs[-1][-3].pcolor(tedist)
                         axs[-1][-3].set_title('tedist')
