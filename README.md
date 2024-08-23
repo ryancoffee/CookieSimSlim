@@ -2,7 +2,13 @@
 Audrey is 16 by 128 Ximg --> npulses.  
 Use python library for counting operations/clock cycles per image.  
 ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```  
-And for NNs ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```  
+And for NNs ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```    
+
+# Not parallel for Razib   
+========================  
+```bash
+./src/run_simulation.py -ofname ../CookieSimSlim_data/css.16x128.h5 -n_threads 4 -n_angles 16 -n_energies 128 -n_images 1024 -centralenergy 64 -centralenergyvar 32 -kickstrength 32 -polstrength 1 -polstrengthvar 0 -offset_threads 0
+```
 
 # CookieSimSlim  
 ===============  
@@ -13,6 +19,7 @@ res = np.fft.ifft(np.fft.fft(f[k]['Ypdf'][()],axis=1)*-1*np.flip(np.fft.fft(f[k]
 
 Slim simulator for LCLS-SLAC CookieBox detector.  
 Updating for 2023 revivial on S3DF.   
+
 
 # Parallelism
 Now I'm using mpi at home.  Usage is something like this... from directory /mnt/islands where I've moved the code as well, and using hard paths.  \
