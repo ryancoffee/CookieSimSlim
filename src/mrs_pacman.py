@@ -237,8 +237,8 @@ def main(fname,plotting=False):
                         #addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
                         #temat[(indref+(temat.shape[0]>>1))%temat.shape[0],
                         #        (rowref+(temat.shape[1]>>1))%temat.shape[1]] += coeff
-                        temat[(rowref + (temat.shape[0]>>1))%temat.shape[0],
-                                (indref + (temat.shape[1]>>1))%temat.shape[1]] += coeff
+                        temat[(indref + (temat.shape[0]>>1))%temat.shape[0],
+                                (rowref + (temat.shape[1]>>1))%temat.shape[1]] += coeff
                         tedist[10:-10,10:-10] = temat
                         tedist = cv2.GaussianBlur(tedist,(11,3),0)#,ewidthmean,twidthmean)
                         #addGauss2d_padding_10(tedist,coeff,indref,rowref,ewidth/estep,twidth/tstep)
