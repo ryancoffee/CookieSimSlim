@@ -10,15 +10,16 @@ import math
 import time
 import cv2
 
-from utils import gauss,addGauss2d,addGauss2d_padding_10
+from utils import gauss,addGauss2d,addGauss2d_padding_10,detect_peaks
 
-DISTRIBUTIONS = True
-#NSHOTS = 1<<10
-NSHOTS = 1<<3
+NSHOTS = 1<<10
+#NSHOTS = 1<<3
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
 THRESH = 15
+
+
 
 def kernConv1d(kmat,xmat):
     res = np.zeros(xmat.shape[1],dtype=float)
@@ -93,6 +94,11 @@ def main(fname,plotting=False):
         with h5py.File(opath + '/' + oname,'w') as o:
             if 'shotkeys' in o.keys():
                 o['true'].attrs['hist'] = np.zeros((1<<4),dtype=np.uint16)
+                o['pred']=np.zeros((1<<4,1<<4),dtype=np.uint16)
+                o['pred'].attrs['true']=0
+                o['pred'].attrs['hist'] = np.zeros((1<<4),dtype=np.uint16)
+
+                '''
                 o['80pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['40pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['20pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
@@ -107,12 +113,18 @@ def main(fname,plotting=False):
                 o['05pct'].attrs['true']=0
                 o['02pct'].attrs['true']=0
                 o['01pct'].attrs['true']=0
+                '''
                 o['shotkeys']=shotkeys[:NSHOTS]
                 o['coeffhist']=np.zeros((1<<7),dtype=np.uint32)
                 o['coeffbins']=np.arange((1<<7)+1,dtype=float)/float(1<<7)
             else: 
                 o.create_group('true')
                 o['true'].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
+                o.create_dataset('pred',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
+                o['pred'].attrs.create('true',data=0)
+                o['pred'].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
+
+                '''
                 o.create_dataset('80pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
                 o.create_dataset('40pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
                 o.create_dataset('20pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
@@ -127,12 +139,15 @@ def main(fname,plotting=False):
                 o['05pct'].attrs.create('true',data=0)
                 o['02pct'].attrs.create('true',data=0)
                 o['01pct'].attrs.create('true',data=0)
+                '''
                 o.create_dataset('shotkeys',data = shotkeys[:NSHOTS])
                 o.create_dataset('coeffhist',data = np.zeros(1<<7,dtype=np.uint32))
                 o.create_dataset('coeffbins',data = np.arange((1<<7)+1,dtype=float)/float(1<<7))
 
             coefflist = []
             nsase={'true':0}
+            nsase={'pred':0}
+            '''
             for p in o.keys():
                 if re.search('pct',p):
                     nsase[p]=0
@@ -140,20 +155,24 @@ def main(fname,plotting=False):
                         o[p]['hist'] = np.zeros((1<<4),dtype=np.uint16)
                     else:
                         o[p].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
+            '''
 
             for k in shotkeys[:NSHOTS]:
                 temat = np.zeros(f[shotkeys[0]]['Ximg'].shape,dtype=float)
                 tedist = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+20,f[shotkeys[0]]['Ximg'].shape[1]+20),dtype=float)
+                tepeaks = np.zeros((f[shotkeys[0]]['Ximg'].shape[0]+20,f[shotkeys[0]]['Ximg'].shape[1]+20),dtype=float)
 
                 t0 = time.time()
 
                 nsase={'true':0}
+                '''
                 for p in o.keys():
                     if re.search('pct',p):
                         nsase[p]=0
+                '''
 
                 nsase['true'] = f[k].attrs['sasecenters'].shape[0]
-                if nsase['true']>2:
+                if nsase['true']>5:
                     print('skipping nsase = %i'%(nsase['true']))
                     continue
 
@@ -202,6 +221,7 @@ def main(fname,plotting=False):
                     coeff = np.inner(x.flatten(),proj.flatten())
                     coefflist += [coeff]
 
+                    '''
                     cthis = coeff
                     print(coeff)
                     if cthis > THRESH:
@@ -222,6 +242,7 @@ def main(fname,plotting=False):
                         if rat > 0.01:
                             nsase['01pct'] += 1;
     
+                    '''
                     x -= (coeff*proj).astype(int)
                     proj_display += coeff*proj
 
@@ -230,27 +251,23 @@ def main(fname,plotting=False):
                         axs[(i+1)//4][(i+1)%4].pcolor(x)#,vmin=clow,vmax=chigh)
                         axs[(i+1)//4][(i+1)%4].set_title('rm_%i'%i)
                     
-                    if DISTRIBUTIONS:
 
-                        #temat[(indref+(temat.shape[1]>>1))%temat.shape[1],
-                        #        (rowref+(temat.shape[0]>>1))%temat.shape[0]] += coeff
-                        #addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[0]>>1))%tedist.shape[0],(indref+(tedist.shape[1]>>1))%tedist.shape[1],ewidth/estep,twidth/tstep)
-                        #temat[(indref+(temat.shape[0]>>1))%temat.shape[0],
-                        #        (rowref+(temat.shape[1]>>1))%temat.shape[1]] += coeff
-                        temat[(indref + (temat.shape[0]>>1))%temat.shape[0],
-                                (rowref + (temat.shape[1]>>1))%temat.shape[1]] += coeff
-                        tedist[10:-10,10:-10] = temat
-                        tedist = cv2.GaussianBlur(tedist,(11,3),0)#,ewidthmean,twidthmean)
-                        #addGauss2d_padding_10(tedist,coeff,indref,rowref,ewidth/estep,twidth/tstep)
-                        #addGauss2d_padding_10(tedist,coeff,(rowref+(tedist.shape[1]>>1))%tedist.shape[1],(indref+(tedist.shape[0]>>1))%tedist.shape[0],ewidth/estep,twidth/tstep)
+                    temat[(indref + (temat.shape[0]>>1))%temat.shape[0],
+                            (rowref + (temat.shape[1]>>1))%temat.shape[1]] += coeff
+                    tedist[10:-10,10:-10] = temat
+                    tedist = cv2.GaussianBlur(tedist,(9,3),0)#,ewidthmean,twidthmean)
+                    tepeaks = detect_peaks(tedist)
+                    nsase['pred'] = np.sum(tepeaks)
+
     
     
                     if plotting:
                         axs[-1][-4].pcolor(proj_display)
                         axs[-1][-4].set_title('sum projections')
                         #axs[-1][-3].imshow(tedist,origin='lower')
-                        axs[-1][-3].pcolor(tedist)
-                        axs[-1][-3].set_title('tedist')
+                        #axs[-1][-3].pcolor(tedist)
+                        axs[-1][-3].pcolor(tepeaks)
+                        axs[-1][-3].set_title('tepeaks, n = %i'%(nsase['pred']))
                         #axs[-1][-2].imshow(temat,origin='lower')
                         axs[-1][-2].pcolor(temat)
                         #axs[-1][-2].imshow(np.roll(np.roll(temat,temat.shape[0]//2,axis=0),temat.shape[1]//2,axis=1),origin='lower')
@@ -258,14 +275,19 @@ def main(fname,plotting=False):
                         axs[-1][-1].pcolor(y)
                         #axs[-1][-1].imshow(y,origin='lower')
                         axs[-1][-1].set_title('Ypdf')
-                if plotting:
-                    plt.show()
-
 
                 if plotting:
                     plt.show()
+
                 i = min(nsase['true'],o['true'].attrs['hist'].shape[0]-1)
+                j = min(nsase['pred'],o['pred'].shape[1]-1)
                 o['true'].attrs['hist'][i] += 1
+                o['pred'][i,j] += 1
+                o['pred'].attrs['hist'][j] += 1
+                if i==j:
+                    o['pred'].attrs['true'] += 1
+
+                '''
                 for p in nsase.keys():
                     if re.search('pct',p):
                         j = min(nsase[p],o[p].shape[1]-1)
@@ -274,6 +296,7 @@ def main(fname,plotting=False):
                         o[p].attrs['hist'][j] += 1
                         if i==j:
                             o[p].attrs['true'] += 1
+                '''
                         
 
                 t1=time.time()
@@ -309,4 +332,4 @@ if __name__ == '__main__':
         plt.show()
 
     else:
-        main(sys.argv[1],plotting=True)
+        main(sys.argv[1],plotting=False)
