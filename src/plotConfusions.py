@@ -46,10 +46,10 @@ def main(fnames):
     ax.set_ylabel('true')
     for xi, yi, txt in zip(x, y, annotations):
 
-        if xi==yi==1:
-            plt.text(xi, yi, txt, fontdict=None, color='xkcd:skyblue', fontsize = 'large', ha = 'center', va = 'center')
+        if xi==yi:
+            plt.text(xi, yi, txt, fontdict=None, color='xkcd:dark blue', fontsize = 'large', fontweight = 'heavy', ha = 'center', va = 'center')
         else:
-            plt.text(xi, yi, txt, fontdict=None, color='xkcd:eggshell', fontsize = 'large', ha = 'center', va = 'center')
+            plt.text(xi, yi, txt, fontdict=None, color='xkcd:eggshell', fontsize = 'large', fontweight = 'heavy', ha = 'center', va = 'center')
         '''
         ax.annotate(text,
                 xy=(xi, yi), xycoords='data',
