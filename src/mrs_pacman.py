@@ -12,8 +12,10 @@ import cv2
 
 from utils import gauss,addGauss2d,addGauss2d_padding_10,detect_peaks
 
-NSHOTS = 1<<10
 #NSHOTS = 1<<3
+#NSHOTS = 1<<6
+#NSHOTS = 1<<10
+NSHOTS = 1<<12
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
@@ -76,7 +78,7 @@ def main(fname,plotting=False):
     print('.1eV = 100fs, 1eV = 10fs, (30nm width @ 800nm) 50meV = 33fs gives time-bandwidth product dE[eV]*dt[fs] = %f'%TEPROD)
     runtimes = []
     with h5py.File(fname,'r') as f:
-        shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>1]
+        shotkeys = [k for k in f.keys() if len(f[k].attrs['sasecenters'])>0]
         rng.shuffle(shotkeys)
         oname = fname + '.tempout.h5'
         m = re.search('^(.*/)(\w+.+\.\d+)\.h5',fname)
@@ -97,23 +99,6 @@ def main(fname,plotting=False):
                 o['pred']=np.zeros((1<<4,1<<4),dtype=np.uint16)
                 o['pred'].attrs['true']=0
                 o['pred'].attrs['hist'] = np.zeros((1<<4),dtype=np.uint16)
-
-                '''
-                o['80pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
-                o['40pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
-                o['20pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
-                o['10pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
-                o['05pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
-                o['02pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
-                o['01pct']=np.zeros((1<<4,1<<4),dtype=np.uint16)
-                o['80pct'].attrs['true']=0
-                o['40pct'].attrs['true']=0
-                o['20pct'].attrs['true']=0
-                o['10pct'].attrs['true']=0
-                o['05pct'].attrs['true']=0
-                o['02pct'].attrs['true']=0
-                o['01pct'].attrs['true']=0
-                '''
                 o['shotkeys']=shotkeys[:NSHOTS]
                 o['coeffhist']=np.zeros((1<<7),dtype=np.uint32)
                 o['coeffbins']=np.arange((1<<7)+1,dtype=float)/float(1<<7)
@@ -123,23 +108,6 @@ def main(fname,plotting=False):
                 o.create_dataset('pred',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
                 o['pred'].attrs.create('true',data=0)
                 o['pred'].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
-
-                '''
-                o.create_dataset('80pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('40pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('20pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('10pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('05pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('02pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o.create_dataset('01pct',data = np.zeros((1<<4,1<<4),dtype=np.uint16))
-                o['80pct'].attrs.create('true',data=0)
-                o['40pct'].attrs.create('true',data=0)
-                o['20pct'].attrs.create('true',data=0)
-                o['10pct'].attrs.create('true',data=0)
-                o['05pct'].attrs.create('true',data=0)
-                o['02pct'].attrs.create('true',data=0)
-                o['01pct'].attrs.create('true',data=0)
-                '''
                 o.create_dataset('shotkeys',data = shotkeys[:NSHOTS])
                 o.create_dataset('coeffhist',data = np.zeros(1<<7,dtype=np.uint32))
                 o.create_dataset('coeffbins',data = np.arange((1<<7)+1,dtype=float)/float(1<<7))
@@ -147,15 +115,6 @@ def main(fname,plotting=False):
             coefflist = []
             nsase={'true':0}
             nsase={'pred':0}
-            '''
-            for p in o.keys():
-                if re.search('pct',p):
-                    nsase[p]=0
-                    if 'hist' in o[p].attrs.keys():
-                        o[p]['hist'] = np.zeros((1<<4),dtype=np.uint16)
-                    else:
-                        o[p].attrs.create('hist',data = np.zeros((1<<4),dtype=np.uint16))
-            '''
 
             for k in shotkeys[:NSHOTS]:
                 temat = np.zeros(f[shotkeys[0]]['Ximg'].shape,dtype=float)
@@ -165,14 +124,9 @@ def main(fname,plotting=False):
                 t0 = time.time()
 
                 nsase={'true':0}
-                '''
-                for p in o.keys():
-                    if re.search('pct',p):
-                        nsase[p]=0
-                '''
 
                 nsase['true'] = f[k].attrs['sasecenters'].shape[0]
-                if nsase['true']>5:
+                if nsase['true']>10:
                     print('skipping nsase = %i'%(nsase['true']))
                     continue
 
@@ -212,37 +166,15 @@ def main(fname,plotting=False):
                     kern = fillKernel(width=ewidth,strength=stref,kern=kern)
                     twidth=float(TEPROD)/ewidth
 
-                    ewidthmean *= i
+                    ewidthmean *= float(i)
                     ewidthmean += ewidth
-                    ewidthmean -= i+1
+                    ewidthmean /= float(i+1)
     
                     proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
                     #proj = np.roll(np.roll(kern,-indref,axis=0),rowref,axis=1)
                     coeff = np.inner(x.flatten(),proj.flatten())
                     coefflist += [coeff]
 
-                    '''
-                    cthis = coeff
-                    print(coeff)
-                    if cthis > THRESH:
-                        rat = cthis/cmax
-                    
-                        if rat > 0.8:
-                            nsase['80pct'] += 1;
-                        if rat > 0.4:
-                            nsase['40pct'] += 1;
-                        if rat > 0.2:
-                            nsase['20pct'] += 1;
-                        if rat > 0.1:
-                            nsase['10pct'] += 1;
-                        if rat > 0.05:
-                            nsase['05pct'] += 1;
-                        if rat > 0.02:
-                            nsase['02pct'] += 1;
-                        if rat > 0.01:
-                            nsase['01pct'] += 1;
-    
-                    '''
                     x -= (coeff*proj).astype(int)
                     proj_display += coeff*proj
 
@@ -255,13 +187,17 @@ def main(fname,plotting=False):
                     temat[(indref + (temat.shape[0]>>1))%temat.shape[0],
                             (rowref + (temat.shape[1]>>1))%temat.shape[1]] += coeff
                     tedist[10:-10,10:-10] = temat
-                    tedist = cv2.GaussianBlur(tedist,(9,3),0)#,ewidthmean,twidthmean)
+                    blurwidth = int(ewidthmean*2)
+                    blurwidth += (blurwidth+1)%2
+                    tedist = cv2.GaussianBlur(tedist,(blurwidth,3),0)#,ewidthmean,twidthmean)
+                    #tedist = cv2.GaussianBlur(tedist,(13,3),0)#,ewidthmean,twidthmean)
                     tepeaks = detect_peaks(tedist)
                     nsase['pred'] = np.sum(tepeaks)
 
     
     
                     if plotting:
+                        print('ewidthmean = %.2f'%ewidthmean)
                         axs[-1][-4].pcolor(proj_display)
                         axs[-1][-4].set_title('sum projections')
                         #axs[-1][-3].imshow(tedist,origin='lower')
@@ -276,6 +212,7 @@ def main(fname,plotting=False):
                         #axs[-1][-1].imshow(y,origin='lower')
                         axs[-1][-1].set_title('Ypdf')
 
+
                 if plotting:
                     plt.show()
 
@@ -287,31 +224,20 @@ def main(fname,plotting=False):
                 if i==j:
                     o['pred'].attrs['true'] += 1
 
-                '''
-                for p in nsase.keys():
-                    if re.search('pct',p):
-                        j = min(nsase[p],o[p].shape[1]-1)
-                        #print('%s:(%i %i)'%(p,i,j))
-                        o[p][i,j] += 1
-                        o[p].attrs['hist'][j] += 1
-                        if i==j:
-                            o[p].attrs['true'] += 1
-                '''
-                        
-
                 t1=time.time()
                 runtimes += [t1-t0]
+
+            o.create_dataset('runtimes',data = np.array(runtimes,dtype=np.float16))
 
             print('... working coefficient histogram ... ')
             h,b = np.histogram(coefflist,o['coeffhist'].shape[0])
             o['coeffhist'][()] = h
             o['coeffbins'][()] = b
 
-    #bins = np.arange(nbins+1,dtype=float)/(nbins)*10.*1e9
-    nbins = 1<<6
-    print('... working runtime histogram ... ')
-    h,b=np.histogram(runtimes,bins=nbins)
-    _=[print('%02i.%i s:'%(int(b[i]),int((b[i]%1)*1e3)) + ' '*v+'+') for i,v in enumerate(h)]
+            nbins = 1<<6
+            print('... working runtime histogram ... ')
+            h,b=np.histogram(runtimes,bins=nbins)
+            _=[print('%02i.%i s:'%(int(b[i]),int((b[i]%1)*1e3)) + ' '*v+'+') for i,v in enumerate(h)]
     return
 
 if __name__ == '__main__':

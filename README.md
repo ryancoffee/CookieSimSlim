@@ -4,6 +4,13 @@ Use python library for counting operations/clock cycles per image.
 ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```  
 And for NNs ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```    
 
+# Plotting Confusion  
+====================
+![plot](./figs/plotConfusions.png)
+
+Brief confusion matrix from the mrs_pacman.py  
+
+
 # Not parallel for Razib   
 ========================  
 ```bash
