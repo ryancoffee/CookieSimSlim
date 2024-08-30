@@ -14,10 +14,11 @@ def main(fnames):
         with h5py.File(fname,'r') as f:
             confusion += f['pred'][()]
 
-    truehist = np.sum(confusion,axis=0)
+    truehist = np.sum(confusion,axis=1)
     normmat = np.tile(truehist,(len(truehist),1)).astype(np.float16)
     _=[print(' '*int(v) + '.') for v in truehist]
     inds = np.where(normmat>0)
+    print(np.sum(confusion))
     normconfusion = np.copy(confusion).astype(np.float16)
     normconfusion[inds] /= normmat[inds]
 
