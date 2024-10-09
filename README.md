@@ -4,11 +4,53 @@ Use python library for counting operations/clock cycles per image.
 ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```  
 And for NNs ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```    
 
+# Running copies 
+... against multiple files that came from a number of threads.
+```bash
+for num in {001..031}; do /nvme0/CookieSimSlim/src/mrs_pacman.py /nvme0/CookieSimSlim_data/css.16x128.coffee-office.$num.h5 & done
+```
+
+This leads to the following response from `top`.   
+```bash
+ 750484 coffee    20   0 1848960 365592  62596 R  73.8   1.1   1:20.74 mrs_pacman.py                                                                                                                                                           
+ 750455 coffee    20   0 1848900 365792  62860 R  58.1   1.1   1:25.49 mrs_pacman.py                                                                                                                                                           
+ 750480 coffee    20   0 1848836 366192  63328 R  56.8   1.1   1:19.66 mrs_pacman.py                                                                                                                                                           
+ 750458 coffee    20   0 1848320 365816  63472 R  56.5   1.1   1:21.43 mrs_pacman.py                                                                                                                                                           
+ 750464 coffee    20   0 1848948 365924  62952 R  53.8   1.1   1:18.90 mrs_pacman.py                                                                                                                                                           
+ 750475 coffee    20   0 1848760 365716  62928 R  52.8   1.1   1:18.37 mrs_pacman.py                                                                                                                                                           
+ 750485 coffee    20   0 1848896 365864  62940 R  51.5   1.1   1:19.67 mrs_pacman.py                                                                                                                                                           
+ 750461 coffee    20   0 1848960 365808  62908 R  50.2   1.1   1:15.21 mrs_pacman.py                                                                                                                                                           
+ 750466 coffee    20   0 1848796 365556  62732 R  50.2   1.1   1:15.36 mrs_pacman.py                                                                                                                                                           
+ 750479 coffee    20   0 1848824 365508  62664 R  50.2   1.1   1:15.96 mrs_pacman.py                                                                                                                                                           
+ 750481 coffee    20   0 1848900 365552  62628 R  50.2   1.1   1:20.77 mrs_pacman.py                                                                                                                                                           
+ 750482 coffee    20   0 1849088 365736  62628 R  50.2   1.1   1:16.41 mrs_pacman.py                                                                                                                                                           
+ 750483 coffee    20   0 1848964 365872  62880 R  50.2   1.1   1:16.59 mrs_pacman.py                                                                                                                                                           
+ 750457 coffee    20   0 1848908 365980  63040 R  49.8   1.1   1:18.57 mrs_pacman.py                                                                                                                                                           
+ 750459 coffee    20   0 1848944 366188  63204 R  49.8   1.1   1:16.52 mrs_pacman.py                                                                                                                                                           
+ 750460 coffee    20   0 1848896 366028  63096 R  49.8   1.1   1:16.68 mrs_pacman.py                                                                                                                                                           
+ 750463 coffee    20   0 1848920 365864  62908 R  49.8   1.1   1:15.56 mrs_pacman.py                                                                                                                                                           
+ 750465 coffee    20   0 1848912 365780  62932 R  49.8   1.1   1:15.95 mrs_pacman.py                                                                                                                                                           
+ 750467 coffee    20   0 1848620 365836  63188 R  49.8   1.1   1:16.77 mrs_pacman.py                                                                                                                                                           
+ 750468 coffee    20   0 1848808 365836  62996 R  49.8   1.1   1:15.89 mrs_pacman.py                                                                                                                                                           
+ 750470 coffee    20   0 1848588 365504  62880 R  49.8   1.1   1:18.83 mrs_pacman.py                                                                                                                                                           
+ 750471 coffee    20   0 1848780 365676  62868 R  49.8   1.1   1:16.74 mrs_pacman.py                                                                                                                                                           
+ 750472 coffee    20   0 1848892 365324  62400 R  49.8   1.1   1:15.93 mrs_pacman.py                                                                                                                                                           
+ 750474 coffee    20   0 1849032 365848  62796 R  49.8   1.1   1:18.52 mrs_pacman.py                                                                                                                                                           
+ 750476 coffee    20   0 1848864 365864  62968 R  49.8   1.1   1:17.88 mrs_pacman.py                                                                                                                                                           
+ 750477 coffee    20   0 1848616 365180  62528 R  49.8   1.1   1:21.03 mrs_pacman.py                                                                                                                                                           
+ 750478 coffee    20   0 1848812 366208  63360 R  49.8   1.1   1:15.37 mrs_pacman.py                                                                                                                                                           
+ 750469 coffee    20   0 1848564 365476  62880 R  49.5   1.1   1:19.33 mrs_pacman.py                                                                                                                                                           
+ 750456 coffee    20   0 1848976 365864  62852 R  49.2   1.1   1:16.81 mrs_pacman.py                                                                                                                                                           
+ 750473 coffee    20   0 1848928 365732  62776 R  48.8   1.1   1:15.66 mrs_pacman.py                                                                                                                                                           
+ 750462 coffee    20   0 1848572 365244  62648 R  48.2   1.1   1:20.23 mrs_pacman.py        
+```
+
+
 # Plotting Confusion  
 ====================
 ![plot](./figs/plotConfusions.png)
 
-Brief confusion matrix from the mrs_pacman.py  
+Brief confusion matrix from the mrs\_pacman.py  
 
 
 # Not parallel for Razib   

@@ -9,22 +9,24 @@ import matplotlib.pyplot as plt
 import math
 import time
 import cv2
+import multiprocessing as mp
 
 from utils import gauss,addGauss2d,addGauss2d_padding_10,detect_peaks
 
 #NSHOTS = 1<<3
-#NSHOTS = 1<<6
-#NSHOTS = 1<<10
-NSHOTS = 1<<12
+#NSHOTS = 1<<6 # roughly 2 seconds per shot, so 1<<6 = 2.5 min
+NSHOTS = 1<<8 # roughly 10 minutes
+#NSHOTS = 1<<10 # roughly 40 minutes
+#NSHOTS = 1<<12 # 
 TEPROD = 1.62
 TWIN=4./.3 #4 micron streaking/(.3microns/fs)
 EWIN=100. #100 eV window
 THRESH = 15
 
 
-
 def kernConv1d(kmat,xmat):
     res = np.zeros(xmat.shape[1],dtype=float)
+    nprocs = min(mp.cpu_count(),xmat.shape[0])
     ind = 0
     rmax = 0
     vmax = 0.
@@ -35,6 +37,30 @@ def kernConv1d(kmat,xmat):
             ind = i
             rmax = np.argmax(res)
             vmax = res[rmax]
+    return ind,rmax,vmax,res
+
+def fftconv(X):
+    tmp = np.sum( np.fft.ifft(np.fft.fft(np.roll(X['xmat'],X['i'],axis=0),axis=1)*np.fft.fft(np.flip(X['kmat'],axis=1),axis=1),axis=1).real, axis=0)
+    return (X['i'],tmp)
+
+def para_kernConv1d(kmat,xmat):
+    res = np.zeros(xmat.shape[1],dtype=float)
+    nprocs = min(mp.cpu_count(),xmat.shape[0])
+    ind = 0
+    rmax = 0
+    vmax = 0.
+    Xlist = []
+    for i in range(xmat.shape[0]):
+        Xlist += [{'i':i,'kmat':kmat,'xmat':xmat}]
+
+    with mp.Pool(nprocs) as p:
+        tmplist = p.map(fftconv,Xlist)
+        for i in range(len(tmplist)):
+            if np.max(tmplist[i][1])>np.max(res):
+                res = tmplist[i][1]
+                ind = tmplist[i][0]
+                rmax = np.argmax(res)
+                vmax = res[rmax]
     return ind,rmax,vmax,res
 
 def conv1d(xmat,ymat):
