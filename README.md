@@ -4,6 +4,12 @@ Use python library for counting operations/clock cycles per image.
 ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```  
 And for NNs ```https://bnikolic.co.uk/blog/python/flops/2019/09/27/python-counting-events.html```    
 
+# Runtimes
+![plot](./figs/runtimes_all.png)
+
+Runtimes for various Intel CPUs, 4 cores are home NUC8i5 and the 16 cores is office Intel and 128 is AMD Rome cluster node in S3DF.  
+
+
 # Running copies 
 ... against multiple files that came from a number of threads.
 ```bash
