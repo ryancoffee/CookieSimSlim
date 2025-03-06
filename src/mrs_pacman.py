@@ -10,6 +10,7 @@ import math
 import time
 import cv2
 import multiprocessing as mp
+import pyJoules as pj
 
 from utils import gauss,addGauss2d,addGauss2d_padding_10,detect_peaks
 
@@ -284,4 +285,5 @@ if __name__ == '__main__':
         plt.show()
 
     else:
+        @pj.energy_meter.measure_energy
         main(sys.argv[1],plotting=False)

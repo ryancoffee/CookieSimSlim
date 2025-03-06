@@ -18,11 +18,6 @@ def main():
         labels = ['4 threads, 4 cores, single',
                 '16 threads, 8 cores, hyper',
                 '32 threads, 8 cores, hyper']
-        '''
-        baratzapath = '/media/coffee/9C33-6BBD/CookieSimSlim_data/output/4in4/'
-        officepath = '/media/coffee/9C33-6BBD/CookieSimSlim_data/output/16in16/'
-        officepath2 = '/media/coffee/9C33-6BBD/CookieSimSlim_data/output/32in16/'
-        '''
     elif re.search('sdf',nodename):
         paths = ['/sdf/data/lcls/ds/tmo/tmox42619/scratch/CookieSimSlim_data/output/4in4/',
                 '/sdf/data/lcls/ds/tmo/tmox42619/scratch/CookieSimSlim_data/output/16in16/',
@@ -34,8 +29,19 @@ def main():
                 '32 threads, 8 cores, hyper',
                 '8 threads, 128 cores, single'
                 ]
+    elif re.search('office',nodename):
+        paths = ['/nvme0/CookieSimSlim_data/output/4in4/',
+                '/nvme0/CookieSimSlim_data/output/16in16/',
+                '/nvme0/CookieSimSlim_data/output/32in16/',
+                '/nvme0/CookieSimSlim_data/output/1in128/'
+                ]
+        labels = ['4 threads, 4 cores, single',
+                '16 threads, 8 cores, hyper',
+                '32 threads, 8 cores, hyper',
+                '8 threads, 128 cores, single'
+                ]
     else:
-        print('working on unfamiliar node, fillepaths likely do not exist')
+        print('working on unfamiliar node, filepaths likely do not exist')
         return
 
     xbins = np.arange(0,6.1,.05,dtype=np.float16)
