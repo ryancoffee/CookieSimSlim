@@ -43,7 +43,8 @@ def main():
     if len(unparsed) > 0:
         print('Unrecognized argument(s): \n%s \nProgram exiting ... ... ' % '\n'.join(unparsed))
         exit(0)
-    m = re.search('(^.*)\/(\w+)\.h5',args.ofname)
+    #m = re.search('(^.*)\/(\w+)\.h5',args.ofname)
+    m = re.search(r'^(.+)/(.+)\.h5$',args.ofname) #adjusting for issue parsing in s3df sbatch
     if not m:
         print('failed filename match for ofname = %s'%args.ofname)
         return
