@@ -13,4 +13,3 @@ nimages=16384 #4096
 [ -d "$opath" ] || mkdir -p $opath
 outfile=${opath}/css.${nangles}x${nenergies}.h5
 python3 ${HOME}/projects/CookieSimSlim/src/run_simulation.py -ofname ${outfile} -n_threads ${nthreads} -offset_threads ${offset} -n_angles ${nangles} -n_energies ${nenergies} -n_images ${nimages} -centralenergy 160 -centralenergyvar 100 -kickstrength 64 -polstrength 1 -polstrengthvar 0
-wait

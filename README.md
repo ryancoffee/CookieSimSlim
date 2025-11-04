@@ -5,24 +5,25 @@ Generally now, 16k images per thread runs somewhere around a minute or two.
 I changed the energy scale so that it is about 1/5th of an eV per bin and using the 320 long vector for sake of Groq optimizaiton.  
 I also removed Ximg and Ypdf and the Xaddresses and such from the Train set (preserved in Test).  
 
-Here is the contents of `run_local.bash` to be called with no arguements...  
+Here is the contents of `runs3df.bash` to be called with no arguements...  
 ```bash
 #!/usr/bin/bash
 
-opath=/media/coffee/9C33-6BBD/CookieSimSlim_tokens
-nthreads=4
+source /sdf/group/lcls/ds/ana/sw/conda2/manage/bin/psconda.sh
+
+opath=/sdf/data/slac/s2ai/CookieSimSlim_tokens
+nthreads=16
 offset=0
 nangles=16
 nenergies=320
 nimages=16384 #4096
 
-# 16 angles, 128 energies, 4096 images, less than a minute to run
-# and each thread/file is only 77MB, so the whole move at the end is less than 1GB
+# 16 angles, 320 energies, 16k images, less than three minutes to run
+# and each thread/file is only 120MB, but only Test has Ximg and Ypdf  
 
 [ -d "$opath" ] || mkdir -p $opath
 outfile=${opath}/css.${nangles}x${nenergies}.h5
-python3 ${HOME}/projects/CookieSimSlim/src/run_simulation.py -ofname ${outfile} -n_threads ${nthreads} -offset_threads ${offset} -n_angles ${nangles} -n_energies ${nenergies} -n_images ${nimages} -centralenergy 160 -centralenergyvar 100 -kickstrength 64 -polstrength 1 -polstrengthvar 0
-wait
+python3 ${HOME}/CookieSimSlim/src/run_simulation.py -ofname ${outfile} -n_threads ${nthreads} -offset_threads ${offset} -n_angles ${nangles} -n_energies ${nenergies} -n_images ${nimages} -centralenergy 160 -centralenergyvar 100 -kickstrength 64 -polstrength 1 -polstrengthvar 0
 ```
 
 # Berthie params 
