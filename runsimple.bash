@@ -1,10 +1,11 @@
 #!/bin/bash
 
-opath=~/data/h5files
-nthreads=2
-nangles=128
-nimages=10
+opath=/~/data/h5files
+nthreads=4
+nangles=16
+nimages=128
+nenergies=360
 
 [ -d "$opath" ] || mkdir -p $opath
 outfile=${opath}/out_128e_${nangles}a.h5
-./src/prob_dist.py ${outfile} $nimages $nangles ${nthreads}   
+./src/run_simulation.py ${outfile} $nimages $nangles ${nthreads}   

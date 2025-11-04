@@ -223,12 +223,14 @@ def runprocess(params):
     # HERE HERE HERE build the string for interpreting the leadning zeros based on the nthreads from run_simulation.
     with h5py.File('%s/%s.%s.%03i.h5'%(params.ofpath,params.ofname,platform.node(),params.tid), 'a') as f:
         for i in range(nimages):
+            is_test = params.rng.uniform() < params.testsplit
             bs = bytearray(map(ord, 'shot_%i_' % i))
             keyhash.update(bs)
             key = keyhash.hexdigest()
             grp = f.create_group(key)
             X, Y = build_XY(params)
-            grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
+            if is_test:
+                grp.create_dataset('Ypdf', data=Y, dtype=np.float32)
             hitsvec = []
             nedges = []
             addresses = []
@@ -240,11 +242,12 @@ def runprocess(params):
                     nedges += [len(h)]
                     addresses += [len(hitsvec)]
                     hitsvec += h
-            grp.create_dataset('Xhits', data=hitsvec, dtype=np.float32)
-            grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint32)
-            grp.create_dataset('Xnedges', data=nedges, dtype=np.uint16)
+            if is_test:
+                grp.create_dataset('Xhits', data=hitsvec, dtype=np.float32)
+                grp.create_dataset('Xaddresses', data=addresses, dtype=np.uint32)
+                grp.create_dataset('Xnedges', data=nedges, dtype=np.uint16)
             grp.attrs.create('nangles', params.nangles,dtype=np.uint8)
-            grp.attrs.create('nenergies', params.nenergies,dtype=np.uint8)
+            grp.attrs.create('nenergies', params.nenergies,dtype=np.uint16)
             grp.attrs.create('drawscale', params.drawscale,dtype=np.float16)
             grp.attrs.create('darkscale', params.darkscale,dtype=np.float16)
             grp.attrs.create('secondaryscale', params.secondaryscale,dtype=np.float16)
@@ -260,29 +263,31 @@ def runprocess(params):
             grp.attrs.create('polstrengths', params.polstrengths,dtype=np.float16)
             grp.attrs.create('kickstrength', params.kickstrength,dtype=np.float16)
 
-            img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
+            if is_test:
+            	img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
             words = []
             overcounts = []
 
             for a in range(grp.attrs['nangles']):
-                offset = grp['Xaddresses'][()][a]
-                nhits = grp['Xnedges'][()][a]
-                img[a,:] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint16)
-                w,o = be.encode(hitsvec[offset:offset+nhits], (params.nenergies//params.baseencode + 1)* params.baseencode)
+                offset = addresses[a] #grp['Xaddresses'][()][a]
+                nhits = nedges[a] #grp['Xnedges'][()][a]
+                if is_test:
+                    img[a,:] += np.histogram(hitsvec[offset:offset+nhits], np.arange(params.nenergies + 1))[0].astype(np.uint16)
+                w,o = be.encode(hitsvec[offset:offset+nhits], (params.nenergies//params.baseencode)* params.baseencode)
                 words += [w]
                 overcounts += [o]
-            grp.create_dataset('Ximg', data=img, dtype=np.uint16)
+            if is_test:
+                grp.create_dataset('Ximg', data=img, dtype=np.uint16)
             grp.create_dataset('words', data=np.row_stack(words),dtype=np.uint64)
             grp.create_dataset('overcounts', data=overcounts,dtype=np.uint16)
             grp['words'].attrs['baseencode'] = params.baseencode
 
             grp.attrs.create('Test', False)
             grp.attrs.create('Train', False)
-            if params.rng.uniform() < params.testsplit:
+            if is_test:
                 grp.attrs['Test'] = True
             else:
                 grp.attrs['Train'] = True
-
     return
 
 def build_XY(params):
