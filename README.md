@@ -1,7 +1,12 @@
 # Addendum for paper on A Hybrid Neural Architecture : Online Attosecnd X-ray Characterization
 Create conda environment according to the requirements.txt.
+The conda evnironment source will reference environment variable $CONDA_ENV_CM
+
+
 Follow steps in s3df_run_script.sh and s3df_run_script_singleEnergy.sh for code operation. 
 See the supplementary material for the paper for more information on run options. 
+The output data will got to path $CSM_DATA_OUTPUT. 
+
 
 # CookieSimSlim  
 ===============  
