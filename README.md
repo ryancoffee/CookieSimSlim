@@ -1,5 +1,5 @@
 # Addendum for paper on A Hybrid Neural Architecture : Online Attosecnd X-ray Characterization
-Create conda environment according to the conda_env.yml file.
+Create conda environment according to the requirements.txt.
 Follow steps in s3df_run_script.sh and s3df_run_script_singleEnergy.sh for code operation. 
 See the supplementary material for the paper for more information on run options. 
 
