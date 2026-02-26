@@ -1,3 +1,15 @@
+# To Do  
+```bash
+ls /sdf/data/slac/s2ai/waveforms/Waveforms_2019-09-06/tens_0_1000_2200_2500/
+```
+Need to make a waveform parser and signal extractor that will then simulate the actual waveform as if from real analog signals. 
+Using the LeCroy sampling as if analog signals.
+
+- Build parsers to make collection of waveforms, aligned to t0.  
+- provide collection to the CookieSimSlim output .h5 file to the analog\_simulator.py
+
+
+
 # Updated for tokenized
 Using list of 64bit integers to store the bitpattern of the hits.  
 `run_local.bash` is the driver script, and in it, one must change `opath` and such.  
