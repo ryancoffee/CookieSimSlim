@@ -1,4 +1,56 @@
-# To Do  
+# To run   
+
+First run the following to generate the .h5 files of simulated data, adjusting the parameter `path_to_output` and others in script `testrun.bash`:   
+The contents of `testrun.bash` are...  
+```bash
+#!/usr/bin/bash
+
+nimages=128
+path_to_output='/nvme0/testrun/CookieSimSlim_data'
+offsetthreads=0
+nthreads=4
+./src/run_simulation.py -ofname ${path_to_output}/css.16x128.h5 -n_threads $nthreads -n_angles 16 -n_energies 128 -n_images $nimages -centralenergy 64 -centralenergyvar 32 -kickstrength 32 -polstrength 1 -polstrengthvar 0 -offset_threads $offsetthreads 
+fnum=`printf '%0*d' 3 $offsetthreads` 
+fname="${path_to_output}/css.16x128.$HOSTNAME.$fnum.h5"
+wait
+./src/mrs_pacman.py $fname 
+```
+The output will be a histogram (naturally printed as ascii art to termina :)) of the time to produce results.  
+For plotting, see deeper in the file `./src/mrs_pacman.py` for the parameters to set for producing plots.  
+
+
+
+# Historical README notes for reference...  
+
+## Berthie params 
+
+```python
+python3 ./src/simulator/run_simulation.py -ofname ./dataset/pulses.h5 -n_threads 10 -n_images 50000 -n_angles 16 -n_energies 128 -polstrength 1 -centralenergy 64
+parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond Angular Streaking')
+parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
+parser.add_argument('-n_threads',   type=int, default=2, help='Number of Threads')
+parser.add_argument('-offset_threads',   type=int, default=0,required=False, help='DONT USE: Offset for Threads, used to produce rngseed[offset] to rngseed[offset + n_threads]')
+parser.add_argument('-n_angles',type=int, default=128, help='Number of angles')
+parser.add_argument('-n_energies',type=int, default=128, help='Number of energy bins [in eV for now]')
+parser.add_argument('-n_images', type=int,default=10, help='Number of images per thread')
+parser.add_argument('-drawscale', type=int,default=1,required=False, help='Scaling for draws from the distribution, e.g. scale the number of electrons')
+parser.add_argument('-drawscalevar', type=int,default=0,required=False, help='Sinusoidal variation (over nthreads)  for scaling the number of draws from the distribution, e.g. scale the number of electrons')
+parser.add_argument('-sasescale', type=int,default=3,required=False, help='Scaling for number of sase subspikes (like number of sinusoids)')
+parser.add_argument('-sasescalevar', type=int,default=0,required=False, help='Sinusoidal variation (over nthreads) for scaling the number of sinusoids')
+parser.add_argument('-centralenergy', type=float,default=50.0,required=False, help='central photon energy')
+parser.add_argument('-centralenergywidth', type=float,default=5.0,required=False, help='central photon energy width')
+parser.add_argument('-centralenergyvar', type=float,default=0.0,required=False, help='central photon energy variation as sinusoid over nthreads')
+parser.add_argument('-darkscale', type=float,default=0.0005,required=False, help='Scaling for the dark count haze that is independent total intensity')
+parser.add_argument('-secondaryscale', type=float,default=0.002,required=False, help='Scaling for the secondary counts as proportion of total intensity')
+parser.add_argument('-kickstrength', type=float,default=30,required=False, help='angular streaking kick strength')
+parser.add_argument('-kickstrengthvar', type=float,default=5,required=False, help='variation of kick strength due to streaking laser fluctuations')
+parser.add_argument('-polstrength', type=float,default=0,required=False, help='anisotropy is 1 + polstrength*cos(2*theta))')
+parser.add_argument('-polstrengthvar', type=float,default=0,required=False, help='variation of anisotropy')
+parser.add_argument('-testsplit', type=float,default=0,required=False, help='test images as percent of total')  # the split will 
+```
+
+## S3DF  
+
 ```bash
 ls /sdf/data/slac/s2ai/waveforms/Waveforms_2019-09-06/tens_0_1000_2200_2500/
 ```
@@ -38,32 +90,6 @@ outfile=${opath}/css.${nangles}x${nenergies}.h5
 python3 ${HOME}/CookieSimSlim/src/run_simulation.py -ofname ${outfile} -n_threads ${nthreads} -offset_threads ${offset} -n_angles ${nangles} -n_energies ${nenergies} -n_images ${nimages} -centralenergy 160 -centralenergyvar 100 -kickstrength 64 -polstrength 1 -polstrengthvar 0
 ```
 
-# Berthie params 
-
-```python
-python3 ./src/simulator/run_simulation.py -ofname ./dataset/pulses.h5 -n_threads 10 -n_images 50000 -n_angles 16 -n_energies 128 -polstrength 1 -centralenergy 64
-parser = argparse.ArgumentParser(description='CookieBox simulator for Attosecond Angular Streaking')
-parser.add_argument('-ofname', type=str,required=True, help='ouput path and base file name')
-parser.add_argument('-n_threads',   type=int, default=2, help='Number of Threads')
-parser.add_argument('-offset_threads',   type=int, default=0,required=False, help='DONT USE: Offset for Threads, used to produce rngseed[offset] to rngseed[offset + n_threads]')
-parser.add_argument('-n_angles',type=int, default=128, help='Number of angles')
-parser.add_argument('-n_energies',type=int, default=128, help='Number of energy bins [in eV for now]')
-parser.add_argument('-n_images', type=int,default=10, help='Number of images per thread')
-parser.add_argument('-drawscale', type=int,default=1,required=False, help='Scaling for draws from the distribution, e.g. scale the number of electrons')
-parser.add_argument('-drawscalevar', type=int,default=0,required=False, help='Sinusoidal variation (over nthreads)  for scaling the number of draws from the distribution, e.g. scale the number of electrons')
-parser.add_argument('-sasescale', type=int,default=3,required=False, help='Scaling for number of sase subspikes (like number of sinusoids)')
-parser.add_argument('-sasescalevar', type=int,default=0,required=False, help='Sinusoidal variation (over nthreads) for scaling the number of sinusoids')
-parser.add_argument('-centralenergy', type=float,default=50.0,required=False, help='central photon energy')
-parser.add_argument('-centralenergywidth', type=float,default=5.0,required=False, help='central photon energy width')
-parser.add_argument('-centralenergyvar', type=float,default=0.0,required=False, help='central photon energy variation as sinusoid over nthreads')
-parser.add_argument('-darkscale', type=float,default=0.0005,required=False, help='Scaling for the dark count haze that is independent total intensity')
-parser.add_argument('-secondaryscale', type=float,default=0.002,required=False, help='Scaling for the secondary counts as proportion of total intensity')
-parser.add_argument('-kickstrength', type=float,default=30,required=False, help='angular streaking kick strength')
-parser.add_argument('-kickstrengthvar', type=float,default=5,required=False, help='variation of kick strength due to streaking laser fluctuations')
-parser.add_argument('-polstrength', type=float,default=0,required=False, help='anisotropy is 1 + polstrength*cos(2*theta))')
-parser.add_argument('-polstrengthvar', type=float,default=0,required=False, help='variation of anisotropy')
-parser.add_argument('-testsplit', type=float,default=0,required=False, help='test images as percent of total')  # the split will 
-```
 
 # TODO
 Audrey is 16 by 128 Ximg --> npulses.  

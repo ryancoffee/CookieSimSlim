@@ -223,7 +223,7 @@ def runprocess(params):
     # HERE HERE HERE build the string for interpreting the leadning zeros based on the nthreads from run_simulation.
     with h5py.File('%s/%s.%s.%03i.h5'%(params.ofpath,params.ofname,platform.node(),params.tid), 'a') as f:
         for i in range(nimages):
-            is_test = params.rng.uniform() < params.testsplit
+            is_test = params.rng.uniform() < 2.0 # params.testsplit # set < 1.0 or greater to get all images written, for use in mrs_pacman.py
             bs = bytearray(map(ord, 'shot_%i_' % i))
             keyhash.update(bs)
             key = keyhash.hexdigest()

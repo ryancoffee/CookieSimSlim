@@ -99,7 +99,7 @@ def fillKernel(width,strength,kern):
 
 def main(fname,plotting=False):
     rng = np.random.default_rng()
-    print('For now assuming 4 micron wavelength streading for a 13 fs temporal window')
+    print('For now assuming 4 micron wavelength streaking for a 13 fs temporal window')
     print('For now also assuming 100eV for the energy window regardless of sampling')
     print('.1eV = 100fs, 1eV = 10fs, (30nm width @ 800nm) 50meV = 33fs gives time-bandwidth product dE[eV]*dt[fs] = %f'%TEPROD)
     runtimes = []
@@ -268,7 +268,7 @@ def main(fname,plotting=False):
 
 if __name__ == '__main__':
     if len(sys.argv)<2:
-        print('give me a file to process')
+        print('give as single arguement an .h5 file to process')
         tedist = np.zeros((1<<7,1<<7),dtype=float)
         ewidth=2.5
         twidth=float(TEPROD)/ewidth
