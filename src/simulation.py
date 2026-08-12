@@ -296,7 +296,7 @@ def build_XY(params):
     kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergyvar,ncenters)) )
-    params.setphases( list(rng.random(ncenters)*2.*np.pi) )
+    params.setphases( list(rng.random(ncenters)*2.*np.pi) ) # can we make this a gaussian (normal) distribution but still have a overall random offset.
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
     if params.iscirc:
         params.setpolstrengths([0.0]*ncenters)
