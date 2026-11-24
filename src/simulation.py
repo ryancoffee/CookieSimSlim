@@ -8,6 +8,7 @@ import os
 import utils
 import binEncodings as be
 import platform
+import math
 
 
 class Params:
@@ -32,7 +33,9 @@ class Params:
         self.centralenergywidth = 8
         self.centralenergyvar = 8
         self.kickstrength = 30.
-        self.kickstrengthvar = 0.
+        self.kickstrengthvar = 10
+        self.kick_jitterpulse = False
+        self.thiskickstrength = 30
         self.polstrengths = [1.]
         self.poldirections = [0.]
         self.streaking = True
@@ -42,6 +45,17 @@ class Params:
         self.fixedlinear = False
         self.iscirc = False
         self.rng = np.random.default_rng()
+
+    def setthiskick(self):
+        if self.kick_jitterpulse:
+            self.thiskickstrength = self.kickstrength*0.5*(1.0+math.cos(self.rng.uniform(0,math.pi)))
+        else:
+            self.thiskickstrength = self.rng.normal(self.kickstrength,self.kickstrengthvar)
+        return self
+
+    def setJitterPulse(self):
+        self.kick_jitterpulse = True
+        return self
 
     def settidIPrng(self,x):
         self.tid = x
@@ -261,7 +275,7 @@ def runprocess(params):
             grp.attrs.create('saseamps', params.saseamps,dtype=np.float16)
             grp.attrs.create('poldirections', params.poldirections,dtype=np.float16)
             grp.attrs.create('polstrengths', params.polstrengths,dtype=np.float16)
-            grp.attrs.create('kickstrength', params.kickstrength,dtype=np.float16)
+            grp.attrs.create('kickstrength', params.thiskickstrength,dtype=np.float16)
 
             if is_test:
             	img = np.zeros((params.nangles,params.nenergies), dtype=np.uint16)
@@ -293,10 +307,10 @@ def runprocess(params):
 def build_XY(params):
     rng = params.rng
     x = np.arange(params.nenergies,dtype=float)
-    kickstrength = rng.normal(params.kickstrength,params.kickstrengthvar)
+    params.setthiskick()
     ncenters = rng.poisson(params.sasescale)
     params.setcenters( list(rng.normal(params.centralenergy,params.centralenergyvar,ncenters)) )
-    params.setphases( list(rng.random(ncenters)*2.*np.pi) ) # can we make this a gaussian (normal) distribution but still have a overall random offset.
+    params.setphases( list(rng.random(ncenters)*2.*math.pi) ) # can we make this a gaussian (normal) distribution but still have a overall random offset.
     params.setamps( [rng.poisson(10)/10 for i in range(ncenters)] )
     if params.iscirc:
         params.setpolstrengths([0.0]*ncenters)
@@ -315,7 +329,7 @@ def build_XY(params):
         for a in range(params.nangles):
             pol = 0.5*(1. + params.polstrengths[i]*np.cos(a*4.*np.pi/params.nangles + params.poldirections[i]) )
             if params.streaking:
-                kick = kickstrength*np.cos(a*2.*np.pi/params.nangles + params.sasephases[i])
+                kick = params.thiskickstrength*np.cos(a*2.*np.pi/params.nangles + params.sasephases[i])
                 ymat[a,:] += params.saseamps[i]* pol * utils.cossq( x , params.sasewidth , c + kick ) # this produces the 2D PDF
             else:
                 ymat[a,:] += params.saseamps[i]* pol * utils.cossq( x , params.sasewidth , c) # this produces the 2D PDF
